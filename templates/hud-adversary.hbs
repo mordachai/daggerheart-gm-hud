@@ -76,27 +76,28 @@
          aria-label="Adversary Features">
       
       {{!-- Panel Header --}}
-      <header class="dgm-panel-header">
-        <div class="dgm-adversary-name">{{adversaryName}}</div>
-        <div class="dgm-pills-container">
-        <span class="dgm-adversary-pills">Tier {{tier}}</span>
-        <span class="dgm-adversary-pills">{{systemType}}</span>
-        </div>
-      </header>
-
-      {{!-- Motives & Tactics (collapsible) --}}
-      {{#if motivesAndTactics}}
       <div class="dgm-section">
         <details>
           <summary>
-            <span class="dgm-section-title">Motives & Tactics</span>
+            <header class="dgm-panel-header">
+              <div class="dgm-adversary-name">{{adversaryName}}</div>
+              <div class="dgm-pills-container">
+              {{#if tier}}<span class="dgm-adversary-pills">Tier {{tier}}</span>{{/if}}
+              {{#if systemType}}<span class="dgm-adversary-pills">{{systemType}}</span>{{/if}}
+              </div>
+            </header>
           </summary>
+          {{#if description}}
           <div class="dgm-section-description">
             {{{description}}}
           </div>
+          {{/if}}
+          {{#if motivesAndTactics}}
           <div class="dgm-section-content">
             {{{motivesAndTactics}}}
           </div>
+          {{/if}}
+          {{#if experiences}}
           <div class="dgm-section-content">
             <span class="dgm-section-title">Experiences</span>
             {{#each experiences}}
@@ -105,9 +106,9 @@
               </div>
             {{/each}}
           </div>
+          {{/if}}
         </details>
       </div>
-      {{/if}}
 
       {{!-- Features List (accordion style) --}}
       <div class="dgm-features-list">

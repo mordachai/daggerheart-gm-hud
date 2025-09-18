@@ -330,7 +330,7 @@
 .dgm-pills-container {
   display: flex;
   flex-direction: row;
-  gap: 0.5rem;
+  gap: 1rem;
   justify-content: flex-start;
   align-items: center;
   flex-wrap: nowrap;
@@ -369,6 +369,7 @@
   font-weight: 700;
   color: var(--dgm-accent);
   margin-bottom: 8px;
+  marker: none;
 }
 
 .dgm-section-content {
