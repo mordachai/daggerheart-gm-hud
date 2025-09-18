@@ -1,0 +1,63 @@
+/* dgm-themes.css - GM HUD Theme Variants */
+
+/* Available themes: default, shadowveil, ironclad, wildfire, frostbite */
+
+/* Default Theme */
+:where(.daggerheart-gm-hud).dgm-theme-default {
+  --dgm-bg: #15131b;
+  --dgm-surface: #1f1b2a;
+  --dgm-panel: #2b2536;
+  --dgm-border: #3b3248;
+  --dgm-text: #f5f5f7;
+  --dgm-muted: #c9c3d7;
+  --dgm-accent: #f2c24b;
+  --dgm-accent-ink: #2b220a;
+}
+
+/* Shadowveil Theme */
+:where(.daggerheart-gm-hud).dgm-theme-shadowveil {
+  --dgm-bg: #0d0a15;
+  --dgm-surface: #1a1525;
+  --dgm-panel: #252035;
+  --dgm-border: #3a2f4a;
+  --dgm-text: #f0f0f2;
+  --dgm-muted: #c0a0ff;
+  --dgm-accent: #6c5ce7;
+  --dgm-accent-ink: #1a1425;
+}
+
+/* Ironclad Theme */
+:where(.daggerheart-gm-hud).dgm-theme-ironclad {
+  --dgm-bg: #0a0f1a;
+  --dgm-surface: #151a25;
+  --dgm-panel: #20252f;
+  --dgm-border: #2f3a45;
+  --dgm-text: #f0f5fa;
+  --dgm-muted: #a0c8ff;
+  --dgm-accent: #74b9ff;
+  --dgm-accent-ink: #0a1520;
+}
+
+/* Wildfire Theme */
+:where(.daggerheart-gm-hud).dgm-theme-wildfire {
+  --dgm-bg: #1a100a;
+  --dgm-surface: #251a15;
+  --dgm-panel: #2f2520;
+  --dgm-border: #453a2f;
+  --dgm-text: #faf5f0;
+  --dgm-muted: #ffb48c;
+  --dgm-accent: #e17055;
+  --dgm-accent-ink: #201510;
+}
+
+/* Frostbite Theme */
+:where(.daggerheart-gm-hud).dgm-theme-frostbite {
+  --dgm-bg: #0a1515;
+  --dgm-surface: #152020;
+  --dgm-panel: #202a2a;
+  --dgm-border: #2f3f3f;
+  --dgm-text: #f0fafa;
+  --dgm-muted: #a0fffa;
+  --dgm-accent: #00cec9;
+  --dgm-accent-ink: #0a1515;
+}

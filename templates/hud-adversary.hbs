@@ -1,0 +1,180 @@
+<section class="dgm-hud dgm-hud--layout" data-open="">
+  
+  {{!-- =============== CORE (center area) =============== --}}
+  <div class="dgm-core">
+    
+    {{!-- HP Counter (top-left) --}}
+    <div class="dgm-count dgm-count--hp" title="Hit Points">
+      <div class="label"><i class="fa-solid fa-heart"></i></div>
+      <div class="value" data-bind="hp">{{hp.value}}/{{hp.max}}</div>
+    </div>
+
+    {{!-- Reaction Roll Button (floating below HP) --}}
+    <div class="dgm-reaction-roll dgm-roll"
+         role="button"
+         tabindex="0"
+         data-action="roll-reaction"
+         title="Reaction Roll">
+      <i class="fa-solid fa-reply"></i>
+    </div>
+
+    {{!-- Difficulty Badge (bottom-left) --}}
+    <div class="dgm-difficulty" title="Difficulty">{{difficulty}}</div>
+
+    {{!-- Stress Counter (below attack ring) --}}
+    <div class="dgm-count dgm-count--stress" title="Stress">
+      <div class="label"><i class="fa-solid fa-bolt"></i></div>
+      <div class="value" data-bind="stress">{{stress.value}}/{{stress.max}}</div>
+    </div>
+
+    {{!-- Portrait with hover info --}}
+    <div class="dgm-portrait" 
+         title="{{adversaryName}} - Tier {{tier}}">
+      <img class="dgm-portrait-img" src="{{portrait}}" alt="{{adversaryName}}">
+    </div>
+
+    {{!-- Attack area (top-right) --}}
+    <div class="dgm-attack dgm-roll"
+         role="button"
+         tabindex="0"
+         data-action="roll-attack"
+         data-attack-id="{{primaryAttack.id}}"
+         title="{{primaryAttack.name}} (+{{primaryAttack.bonus}}, {{primaryAttack.range}}, {{primaryAttack.damage}}, {{primaryAttack.damageType}})">
+      <img class="dgm-attack-icon" src="{{primaryAttack.img}}" alt="{{primaryAttack.name}}">
+      <div class="dgm-attack-bonus">+{{primaryAttack.bonus}}</div>
+    </div>
+
+    {{!-- Features Toggle (bottom-right) --}}
+    <div class="dgm-features-toggle dgm-tab"
+         role="button"
+         tabindex="0"
+         data-tab="features"
+         data-action="toggle-features"
+         aria-controls="dgm-features-panel"
+         aria-expanded="false"
+         title="Toggle Features">
+      <span class="dgm-features-icon">F</span>
+    </div>
+
+  </div>
+
+  {{!-- Damage Thresholds (below core) --}}
+  <div class="dgm-thresholds" aria-label="Damage thresholds">
+    <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.minor'}}</span>
+    <span class="dgm-threshold-val">{{thresholds.major}}</span>
+    <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.major'}}</span>
+    <span class="dgm-threshold-val">{{thresholds.severe}}</span>
+    <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.severe'}}</span>
+  </div>
+
+  {{!-- =============== FEATURES PANEL (expandable) =============== --}}
+  <div class="dgm-tabwrap">
+    <div id="dgm-features-panel" 
+         class="dgm-panel dgm-panel--features" 
+         data-panel="features" 
+         role="dialog" 
+         aria-label="Adversary Features">
+      
+      {{!-- Panel Header --}}
+      <header class="dgm-panel-header">
+        <div class="dgm-adversary-name">{{adversaryName}}</div>
+        <div class="dgm-pills-container">
+        <span class="dgm-adversary-pills">Tier {{tier}}</span>
+        <span class="dgm-adversary-pills">{{systemType}}</span>
+        </div>
+      </header>
+
+      {{!-- Motives & Tactics (collapsible) --}}
+      {{#if motivesAndTactics}}
+      <div class="dgm-section">
+        <details>
+          <summary>
+            <span class="dgm-section-title">Motives & Tactics</span>
+          </summary>
+          <div class="dgm-section-content">
+            {{{motivesAndTactics}}}
+          </div>
+          <div class="dgm-section-content">
+            <span class="dgm-section-title">Experiences</span>
+            {{#each experiences}}
+              <div class="dgm-experience">
+                <strong>{{name}}</strong>: +{{value}} {{description}} {{#if bonus}}({{signed bonus}}){{/if}}
+              </div>
+            {{/each}}
+          </div>
+        </details>
+      </div>
+      {{/if}}
+
+      {{!-- Experiences (if any) --}}
+      {{#if experiences}}
+      <div class="dgm-section">
+        <details>
+          <summary>
+            <span class="dgm-section-title">Experiences</span>
+          </summary>
+          <div class="dgm-section-content">
+            {{#each experiences}}
+              <div class="dgm-experience">
+                <strong>{{name}}</strong>: +{{value}} {{description}} {{#if bonus}}({{signed bonus}}){{/if}}
+              </div>
+            {{/each}}
+          </div>
+        </details>
+      </div>
+      {{/if}}
+
+      {{!-- Features List (accordion style) --}}
+      <div class="dgm-features-list">
+        <ul class="dgm-acc">
+          {{#each features}}
+          <li class="dgm-acc-item">
+            <details>
+              <summary>
+                {{!-- Feature Icon (clickable if has actions) --}}
+                <img class="dgm-feature-icon{{#if hasActions}} clickable{{/if}}"
+                     src="{{img}}"
+                     alt="{{name}}"
+                     role="button"
+                     tabindex="0"
+                     data-action="{{#if hasActions}}feature-exec{{else}}feature-info{{/if}}"
+                     data-feature-id="{{id}}"
+                     title="{{name}}">
+
+                {{!-- Feature Name --}}
+                <span class="dgm-feature-name">{{name}}</span>
+
+                {{!-- Resource Info (uses, etc.) --}}
+                {{#if resourceInfo}}
+                <span class="dgm-feature-resource">
+                  ({{resourceInfo.current}})
+                </span>
+                {{/if}}
+
+                {{!-- Send to Chat Button --}}
+                <i class="far fa-comment dgm-feature-chat"
+                   role="button"
+                   tabindex="0"
+                   data-action="feature-to-chat"
+                   data-feature-id="{{id}}"
+                   title="Send to Chat"></i>
+              </summary>
+
+              {{!-- Feature Description (expanded content) --}}
+              <div class="dgm-feature-content">
+                {{{description}}}
+              </div>
+            </details>
+          </li>
+          {{else}}
+          <li class="dgm-acc-item dgm-empty">No features available</li>
+          {{/each}}
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  {{!-- =============== TOOLTIP TEMPLATES (removed) =============== --}}
+
+</section>

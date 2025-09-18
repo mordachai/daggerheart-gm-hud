@@ -1,0 +1,512 @@
+/* ===== GM HUD THEME VARIABLES ===== */
+:root {
+  --dgm-bg: #15131b;
+  --dgm-surface: #1f1b2a;
+  --dgm-panel: #2b2536;
+  --dgm-border: #3b3248;
+  --dgm-text: #f5f5f7;
+  --dgm-muted: #c9c3d7;
+  --dgm-accent: #f2c24b;
+  --dgm-accent-ink: #2b220a;
+  --dgm-ring-frame: url("../assets/ui/dgm-hud-frame.webp");
+  --dgm-ring-overlap: 2px;
+}
+
+/* ===== REMOVE APPLICATION V2 WINDOW CHROME ===== */
+.daggerheart-gm-hud.window-app,
+.daggerheart-gm-hud.application {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+.daggerheart-gm-hud .window-header { display: none !important; }
+.daggerheart-gm-hud .window-content {
+  background: transparent !important;
+  padding: 10px !important;
+  overflow: visible !important;
+  backdrop-filter: blur(2px);
+}
+.daggerheart-gm-hud .window-resizable-handle { display: none !important; }
+
+/* ===== MAIN LAYOUT SHELL ===== */
+.dgm-hud {
+  color: var(--dgm-text);
+  position: relative;
+  background: transparent !important;
+  border: none;
+  border-radius: 4px;
+  user-select: none;
+  backdrop-filter: blur(2px);
+  box-shadow: none;
+}
+
+.dgm-hud img {
+  border: none;
+}
+
+.dgm-hud--layout {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== CORE AREA (main circle with stats) ===== */
+.dgm-core {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* HP/Stress counters positioned around portrait */
+.dgm-count {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dgm-count--hp {
+  top: 5px;
+  left: 15px;
+}
+
+/* Reaction Roll Button (floating below HP) */
+.dgm-reaction-roll {
+  position: absolute;
+  top: 35px;
+  left: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--dgm-border);
+  background: var(--dgm-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  color: var(--dgm-accent);
+}
+
+.dgm-reaction-roll:hover,
+.dgm-reaction-roll:focus {
+  border-color: var(--dgm-accent);
+  background: var(--dgm-accent);
+  color: var(--dgm-accent-ink);
+  transform: scale(1.05);
+}
+
+.dgm-count--stress {
+  top: 55px;
+  right: -10px;
+}
+
+.dgm-count .label {
+  color: var(--dgm-accent);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.dgm-count .value:hover {
+  font-weight: 800;
+  text-shadow: 0 0 3px var(--dgm-accent);
+}
+
+/* Difficulty badge (bottom-left corner) */
+.dgm-difficulty {
+  position: absolute;
+  bottom: -5px;
+  left: -5px;
+  background: var(--dgm-surface);
+  color: var(--dgm-accent);
+  border: 2px solid var(--dgm-border);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  z-index: 10;
+}
+
+/* Portrait (center) */
+.dgm-portrait {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  z-index: 5;
+  cursor: default;
+  
+  /* Ring frame overlay */
+  background-image: var(--dgm-ring-frame);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dgm-portrait:hover {
+  filter: brightness(1.1);
+}
+
+.dgm-portrait-img {
+  width: calc(100% - calc(var(--dgm-ring-overlap) * 2));
+  height: calc(100% - calc(var(--dgm-ring-overlap) * 2));
+  object-fit: contain;
+  border-radius: 50%;
+  position: absolute;
+  top: var(--dgm-ring-overlap);
+  left: var(--dgm-ring-overlap);
+  z-index: 1;
+}
+
+/* Attack button (top-right of portrait) with ring frame */
+.dgm-attack {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background-image: var(--dgm-ring-frame);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dgm-attack:hover,
+.dgm-attack:focus {
+  filter: brightness(1.3);
+  transform: scale(1.05);
+}
+
+.dgm-attack-icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.dgm-attack-bonus {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--dgm-surface);
+  color: var(--dgm-accent);
+  border: 1px solid var(--dgm-accent);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  z-index: 10;
+}
+
+/* Features toggle (bottom-right) */
+.dgm-features-toggle {
+  position: absolute;
+  bottom: 15px;
+  right: 5px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--dgm-border);
+  background: var(--dgm-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 800;
+  color: var(--dgm-accent);
+}
+
+.dgm-features-toggle:hover,
+.dgm-features-toggle:focus {
+  border-color: var(--dgm-accent);
+  background: var(--dgm-accent);
+  color: var(--dgm-accent-ink);
+}
+
+.dgm-features-toggle[aria-expanded="true"] {
+  background: var(--dgm-accent);
+  color: var(--dgm-accent-ink);
+}
+
+/* ===== FEATURES PANEL ===== */
+.dgm-tabwrap {
+  position: relative;
+}
+
+.dgm-panel {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(100% + 8px); /* Default: open upward */
+  width: 320px;
+  max-height: 70vh;
+  background: var(--dgm-panel);
+  border: 2px solid var(--dgm-border);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+  display: none;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+/* Panel direction variants (will be set by JS) */
+.dgm-panel[data-open-dir="down"] {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+
+.dgm-panel[data-open-dir="up"] {
+  bottom: calc(100% + 8px);
+  top: auto;
+}
+
+/* Show panel when features are toggled */
+.dgm-hud[data-open="features"] .dgm-panel--features {
+  display: block;
+}
+
+/* Panel Header */
+.dgm-panel-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--dgm-border);
+  gap: 8px;
+}
+
+.dgm-adversary-name {
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--dgm-accent);
+  font-family: "Cinzel Decorative", serif;
+  height: fit-content;
+  text-align: center;
+}
+
+.dgm-pills-container {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.dgm-adversary-pills {
+  background: var(--dgm-surface);
+  color: var(--dgm-accent);
+  padding: 2px 8px;
+  border: 1px solid var(--dgm-accent);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap ;
+}
+
+/* Panel Sections */
+.dgm-section {
+  margin-bottom: 12px;
+}
+
+.dgm-section details {
+  border: 1px solid var(--dgm-border);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.dgm-section details[open] {
+  border-color: var(--dgm-accent);
+}
+
+.dgm-section summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--dgm-accent);
+  margin-bottom: 8px;
+}
+
+.dgm-section-content {
+  color: var(--dgm-text);
+  font-size: 14px;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+.dgm-experience {
+  margin-bottom: 6px;
+}
+
+/* Features List (Accordion) */
+.dgm-features-list {
+  margin-top: 8px;
+}
+
+.dgm-acc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dgm-acc-item details {
+  border: 1px solid var(--dgm-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.dgm-acc-item details[open] {
+  border-color: var(--dgm-accent);
+}
+
+.dgm-acc-item summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.dgm-feature-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 4px;
+  border: 1px solid var(--dgm-border);
+}
+
+.dgm-feature-icon.clickable {
+  cursor: pointer;
+  border-color: var(--dgm-accent);
+}
+
+.dgm-feature-icon.clickable:hover {
+  border-color: var(--dgm-accent);
+  box-shadow: 0 0 4px rgba(242, 194, 75, 0.4);
+}
+
+.dgm-feature-name {
+  flex: 1 1 auto;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dgm-feature-resource {
+  flex: 0 0 auto;
+  color: var(--dgm-accent);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.dgm-feature-chat {
+  flex: 0 0 auto;
+  width: 20px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.dgm-feature-chat:hover {
+  opacity: 1;
+  color: var(--dgm-accent);
+}
+
+.dgm-feature-content {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--dgm-border);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--dgm-text);
+}
+
+/* Empty state */
+.dgm-empty {
+  text-align: center;
+  font-style: italic;
+  opacity: 0.7;
+  padding: 16px;
+}
+
+/* ===== DAMAGE THRESHOLDS (below core) ===== */
+.dgm-thresholds {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .25rem;
+  pointer-events: none;
+}
+
+.dgm-threshold-chip {
+  background: var(--dgm-surface);
+  color: var(--dgm-accent);
+  padding: .14rem .6rem;
+  border-radius: 8px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.dgm-threshold-val {
+  padding: .1rem .45rem;
+  border: 1px solid var(--dgm-border);
+  border-radius: 8px;
+  background: var(--dgm-surface);
+  color: var(--dgm-text);
+  font-weight: 800;
+  min-width: 2.2ch;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* ===== RESPONSIVENESS ===== */
+@media (max-width: 600px) {
+  .dgm-panel {
+    width: 280px;
+    max-height: 60vh;
+  }
+}
