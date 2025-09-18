@@ -91,29 +91,14 @@
           <summary>
             <span class="dgm-section-title">Motives & Tactics</span>
           </summary>
+          <div class="dgm-section-description">
+            {{{description}}}
+          </div>
           <div class="dgm-section-content">
             {{{motivesAndTactics}}}
           </div>
           <div class="dgm-section-content">
             <span class="dgm-section-title">Experiences</span>
-            {{#each experiences}}
-              <div class="dgm-experience">
-                <strong>{{name}}</strong>: +{{value}} {{description}} {{#if bonus}}({{signed bonus}}){{/if}}
-              </div>
-            {{/each}}
-          </div>
-        </details>
-      </div>
-      {{/if}}
-
-      {{!-- Experiences (if any) --}}
-      {{#if experiences}}
-      <div class="dgm-section">
-        <details>
-          <summary>
-            <span class="dgm-section-title">Experiences</span>
-          </summary>
-          <div class="dgm-section-content">
             {{#each experiences}}
               <div class="dgm-experience">
                 <strong>{{name}}</strong>: +{{value}} {{description}} {{#if bonus}}({{signed bonus}}){{/if}}

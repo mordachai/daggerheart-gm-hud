@@ -382,8 +382,9 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       };
     }
 
-    // Motives & Tactics
+    // Description and Motives & Tactics
     const motivesAndTactics = sys.motivesAndTactics || "";
+    const description = sys.description || "";
 
     // Experiences
     const experiences = [];
@@ -434,6 +435,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       adversaryName,
       portrait,
       tier,
+      description,
       systemType,
       difficulty,
       hp,
