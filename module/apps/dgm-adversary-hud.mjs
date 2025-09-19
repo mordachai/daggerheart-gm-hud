@@ -12,28 +12,41 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 function setGMPanelOpenDirection(panel) {
   if (!panel) return;
 
-  const wrap = panel.closest(".dgm-tabwrap") || panel.parentElement;
-  const rect = wrap.getBoundingClientRect();
+  // Get the ENTIRE HUD container bounds, not just the tabwrap
+  const hudContainer = panel.closest(".dgm-container") || panel.closest(".dgm-hud") || panel.parentElement;
+  const rect = hudContainer.getBoundingClientRect();
 
+  // Calculate space from the HUD edges to viewport edges
   const spaceAbove = rect.top;
   const spaceBelow = window.innerHeight - rect.bottom;
 
+  // Estimate needed height: content's natural height (improved)
   const contentHeight = panel.scrollHeight || 320;
-  const minRoom = 220;
-  const need = Math.max(minRoom, Math.min(contentHeight, Math.min(window.innerHeight * 0.7, 500)));
+  const minRoom = 220;     // prevent jitter
+  const maxContentHeight = Math.min(window.innerHeight * 0.7, 500);
+  const need = Math.max(minRoom, Math.min(contentHeight, maxContentHeight));
 
+  // Choose direction based on space outside the HUD
   let dir;
   if (spaceBelow >= need) dir = "down";
   else if (spaceAbove >= need) dir = "up";
   else dir = (spaceBelow >= spaceAbove) ? "down" : "up";
 
+  // Apply direction and max height
   panel.setAttribute("data-open-dir", dir);
   
-  const maxH = (dir === "down" ? Math.max(180, spaceBelow - 12) : Math.max(180, spaceAbove - 12));
-  const maxHeight = Math.min(maxH, window.innerHeight * 0.7);
+  // Calculate max height with proper margins from viewport edges
+  const margin = 12;
+  const maxH = (dir === "down" ? 
+    Math.max(180, spaceBelow - margin) : 
+    Math.max(180, spaceAbove - margin)
+  );
+  const finalMaxHeight = Math.min(maxH, maxContentHeight);
   
-  panel.style.setProperty("--dgm-panel-maxh", `${maxHeight}px`);
+  panel.style.setProperty("--dgm-panel-maxh", `${finalMaxHeight}px`);
   panel.style.setProperty("--dgm-panel-gap", "8px");
+
+  debugLog(`Panel direction set to "${dir}", max height: ${finalMaxHeight}px (space above: ${spaceAbove}, below: ${spaceBelow})`);
 }
 
 /**
@@ -71,6 +84,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     this.actor = actor ?? null;
     this.token = token ?? null;
     this._lastPosition = null;
+    this._isDragging = false;
   }
 
   async _executeFeature(item, actionPath = "use") {
@@ -150,7 +164,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       const actor = this.actor;
       if (!actor) return;
 
-      // Features toggle
+      // Features toggle - UPDATED with panel direction calculation
       const featuresToggle = ev.target.closest("[data-action='toggle-features']");
       if (featuresToggle) {
         stop(ev);
@@ -459,11 +473,15 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         // Step 2: Convert inline rolls to clickable buttons
         const finalHTML = toHudInlineButtons(enrichedHTML, { enableDuality: true });
         
+        // FIX: Add hasActions boolean to context
+        const hasActions = featureHasActions(item);
+        
         return {
           id: item.id,
           name: item.name || "Unnamed Feature",
           img: item.img || "icons/svg/aura.svg", 
-          description: finalHTML, // Use the final processed HTML
+          description: finalHTML,
+          hasActions: hasActions, // FIX: Add this boolean
           system: item.system,
           _item: item
         };
@@ -540,8 +558,30 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
 
     let startX, startY, startLeft, startTop, isDragging = false;
 
+    // Add window resize handler for panel repositioning
+    if (!this._resizeHandlerBound) {
+      this._onResize = () => {
+        if (this._isDragging) return;
+
+        // If features panel is open, recompute direction
+        const shell = root.querySelector(".dgm-hud");
+        const isOpen = shell?.getAttribute("data-open") === "features";
+        if (isOpen) {
+          const panel = root.querySelector(".dgm-panel--features");
+          if (panel) {
+            setGMPanelOpenDirection(panel);
+          }
+        }
+      };
+
+      window.addEventListener("resize", this._onResize);
+      this._resizeHandlerBound = true;
+    }
+
     const onMove = (ev) => {
       if (!isDragging) return;
+      
+      this._isDragging = true; // FIX: Set to true during drag
       
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
@@ -553,6 +593,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       root.style.top = `${newTop}px`;
       root.style.bottom = "auto";
       root.style.transform = "none";
+      
     };
 
     const onUp = async () => {
@@ -562,6 +603,8 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       handle.style.cursor = "grab";
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+
+      this._isDragging = false; // FIX: Set to false after drag ends
 
       // Save position
       try {
@@ -575,6 +618,18 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       } catch (err) {
         debugLog("Failed to save position:", err);
       }
+
+      // FIX: Recompute panel direction AFTER drag ends
+      requestAnimationFrame(() => {
+        const shell = root.querySelector(".dgm-hud");
+        const isOpen = shell?.getAttribute("data-open") === "features";
+        if (isOpen) {
+          const panel = root.querySelector(".dgm-panel--features");
+          if (panel) {
+            setGMPanelOpenDirection(panel);
+          }
+        }
+      });
     };
 
     const onDown = (ev) => {
@@ -604,6 +659,11 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
 
   async close(opts) {
     debugLog("Closing GM HUD");
+    if (this._onResize) {
+      window.removeEventListener("resize", this._onResize);
+      this._onResize = null;
+      this._resizeHandlerBound = false;
+    }
     return super.close(opts);
   }
 }

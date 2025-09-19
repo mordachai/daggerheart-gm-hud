@@ -161,12 +161,12 @@
             <details>
               <summary>
                 {{!-- Feature Icon (clickable if has actions) --}}
-                <img class="dgm-feature-icon{{#if (hasActions _item)}} clickable{{/if}}"
+                <img class="dgm-feature-icon{{#if hasActions}} clickable{{/if}}"
                     src="{{img}}"
                     alt="{{name}}"
                     role="button"
                     tabindex="0"
-                    data-action="{{#if (hasActions _item)}}feature-exec{{else}}feature-info{{/if}}"
+                    data-action="{{#if hasActions}}feature-exec{{else}}feature-info{{/if}}"
                     data-feature-id="{{id}}"
                     title="{{name}}">
 

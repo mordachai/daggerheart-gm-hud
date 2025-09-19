@@ -420,12 +420,12 @@
 }
 
 .dgm-panel {
-  position: absolute;
+  position: fixed; /* FIX: Changed from absolute to fixed */
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + var(--dgm-panel-gap, 8px));
   width: 320px;
-  max-height: 70vh;
+  max-height: var(--dgm-panel-maxh, 70vh);
   background: var(--dgm-panel);
   border: 2px solid var(--dgm-border);
   border-radius: 12px;
@@ -437,12 +437,14 @@
 }
 
 .dgm-panel[data-open-dir="down"] {
-  top: calc(100% + 8px);
+  /* Open BELOW the HUD, completely outside */
+  top: calc(100% + var(--dgm-panel-gap, 8px));
   bottom: auto;
 }
 
 .dgm-panel[data-open-dir="up"] {
-  bottom: calc(100% + 8px);
+  /* Open ABOVE the HUD, completely outside */
+  bottom: calc(100% + var(--dgm-panel-gap, 8px));
   top: auto;
 }
 
