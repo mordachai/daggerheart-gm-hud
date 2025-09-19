@@ -1,6 +1,8 @@
 // module/apps/dgm-adversary-hud.mjs - GM Adversary HUD Application V2
 
 import { getSetting, SETTINGS, debugLog, applyThemeToElement } from "../settings.mjs";
+import { sendItemToChat } from "../helpers/chat-utils.mjs";
+
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -55,7 +57,7 @@ function featureHasActions(item) {
 export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "daggerheart-gm-hud",
-    window: { title: "Daggerheart GM HUD", positioned: true, resizable: false },
+    window: { title: "Daggerheart GM HUD", positioned: false, resizable: false }, // Set to false
     position: { width: "auto", height: "auto" },
     classes: ["daggerheart-gm-hud", "app"]
   };
@@ -292,24 +294,10 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
   async _sendFeatureToChat(item) {
     if (!item) return;
     
-    const speaker = ChatMessage.getSpeaker({ actor: this.actor });
-    
     debugLog("Sending feature to chat:", item.name);
     
     try {
-      if (typeof item.displayCard === "function") {
-        await item.displayCard({ speaker });
-        return;
-      }
-      
-      if (typeof item.toChat === "function") {
-        await item.toChat.call(item, { speaker });
-        return;
-      }
-      
-      // Fallback
-      const content = `<h3>${foundry.utils.escapeHTML(item.name)}</h3>${item.system?.description ?? ""}`;
-      await ChatMessage.create({ speaker, content });
+      await sendItemToChat(item, this.actor);
     } catch (err) {
       console.error("[GM HUD] Send to chat failed", err);
       ui.notifications?.error("Failed to send to chat");
@@ -395,13 +383,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     };
 
     // Features - pass raw items to template, let helpers handle logic
-    const features = actor.items.filter(item => item.type === "feature").map(item => ({
-      id: item.id,
-      name: item.name || "Unnamed Feature",
-      img: item.img || "icons/svg/aura.svg",
-      description: item.system?.description || "",
-      system: item.system // Pass full system data for helpers
-    }));
+    const features = actor.items.filter(item => item.type === "feature");
 
     return {
       adversaryName,
@@ -418,15 +400,6 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       thresholds,
       features
     };
-  }
-
-  _getFeatureActionPath(item) {
-    const actions = item.system?.actions;
-    if (!actions || typeof actions !== "object") return "use";
-    
-    // Get first action's system path
-    const firstAction = Object.values(actions)[0];
-    return firstAction?.systemPath || "use";
   }
 
   async _onRender() {

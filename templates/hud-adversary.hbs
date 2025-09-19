@@ -73,7 +73,7 @@
     <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.severe'}}</span>
   </div>
 
-  {{!-- =============== FEATURES PANEL (expandable) =============== --}}
+{{!-- =============== FEATURES PANEL (expandable) =============== --}}
   <div class="dgm-tabwrap">
     <div id="dgm-features-panel" 
          class="dgm-panel dgm-panel--features" 
@@ -124,24 +124,26 @@
             <details>
               <summary>
                 {{!-- Feature Icon (clickable if has actions) --}}
-                <img class="dgm-feature-icon{{#if hasActions}} clickable{{/if}}"
+                <img class="dgm-feature-icon{{#if (hasActions this)}} clickable{{/if}}"
                      src="{{img}}"
                      alt="{{name}}"
                      role="button"
                      tabindex="0"
-                     data-action="{{#if hasActions}}feature-exec{{else}}feature-info{{/if}}"
+                     data-action="{{#if (hasActions this)}}feature-exec{{else}}feature-info{{/if}}"
                      data-feature-id="{{id}}"
                      title="{{name}}">
 
                 {{!-- Feature Name --}}
-                <span class="dgm-feature-name">{{name}}</span>
+                <span class="dgm-feature-name">{{truncate name 25}}</span>
 
                 {{!-- Resource Info (uses, etc.) --}}
-                {{#if resourceInfo}}
+                {{#with (getResourceInfo this)}}
+                {{#if this}}
                 <span class="dgm-feature-resource">
-                  ({{resourceInfo.current}})
+                  {{#if max}}{{value}}/{{max}}{{else}}{{value}}{{/if}}
                 </span>
                 {{/if}}
+                {{/with}}
 
                 {{!-- Send to Chat Button --}}
                 <i class="far fa-comment dgm-feature-chat"
@@ -154,12 +156,12 @@
 
               {{!-- Feature Description (expanded content) --}}
               <div class="dgm-feature-content">
-                {{{description}}}
+                {{{system.description}}}
               </div>
             </details>
           </li>
           {{else}}
-          <li class="dgm-acc-item dgm-empty">No features available</li>
+          <li class="dgm-acc-item dgm-empty">{{l "DAGGERHEART.GENERAL.NoFeatures" "No features available"}}</li>
           {{/each}}
         </ul>
       </div>
@@ -167,6 +169,5 @@
     </div>
   </div>
 
-  {{!-- =============== TOOLTIP TEMPLATES (removed) =============== --}}
 
 </section>
