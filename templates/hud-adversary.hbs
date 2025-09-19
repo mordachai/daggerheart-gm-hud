@@ -129,6 +129,7 @@
               </div>
             </header>
           </summary>
+          <div class="dgm-divider"></div>
           {{#if description}}
           <div class="dgm-section-description">
             {{{description}}}
@@ -141,10 +142,10 @@
           {{/if}}
           {{#if experiences}}
           <div class="dgm-section-content">
-            <span class="dgm-section-title">Experiences</span>
+            <span class="dgm-section-center-title">Experiences</span>
             {{#each experiences}}
               <div class="dgm-experience">
-                <strong>{{name}}</strong>: +{{value}} {{description}} {{#if bonus}}({{signed bonus}}){{/if}}
+                {{name}}: +{{value}} {{description}} {{#if bonus}}({{signed bonus}}){{/if}}
               </div>
             {{/each}}
           </div>

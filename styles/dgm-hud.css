@@ -40,6 +40,7 @@
   user-select: none;
   backdrop-filter: blur(2px);
   box-shadow: none;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .dgm-hud img {
@@ -85,6 +86,8 @@
 .dgm-section--resources {
   gap: 6px;
   min-width: 70px;
+  font-family: 'Segoe UI', Verdana, sans-serif;
+  letter-spacing: 2px;
 }
 
 .dgm-reaction-roll {
@@ -261,6 +264,8 @@
   gap: 6px;
   min-width: 70px;
   max-width: 100px;
+  font-family: 'Segoe UI', Verdana, sans-serif;
+  letter-spacing: 1px;
 }
 
 .dgm-attack {
@@ -468,8 +473,6 @@
   gap: 8px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
-  padding-bottom: 10px;
 }
 
 .dgm-adversary-name {
@@ -567,6 +570,7 @@
 }
 
 .dgm-section-description {
+  font-family: 'Montserrat', sans-serif;
   color: var(--dgm-text);
   font-size: 14px;
   line-height: 1.4;
@@ -574,6 +578,59 @@
   font-style: italic;
   font-weight: 200;
 }
+
+.dgm-divider {
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--dgm-border) 30%,
+    var(--dgm-border) 70%,
+    transparent
+  );
+  color: var(--dgm-accent);
+  margin: 1rem 0;
+}
+
+.dgm-section-center-title {
+  --line-h: 2px;
+  --gap: 0.75rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+
+  color: var(--dgm-accent);
+  font-size: 20px;
+  padding: 5px 5px;
+  width: 100%;
+  font-family: 'Cinzel', serif;
+
+  /* prevent any tiny overflows that cause an x-scrollbar */
+  overflow: hidden;
+}
+
+.dgm-section-center-title::before,
+.dgm-section-center-title::after {
+  content: "";
+  height: var(--line-h);
+  /* fully flexible, never forces extra width */
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 90%;
+  display: block;
+}
+
+.dgm-section-center-title::before {
+  background: linear-gradient(to left, currentColor, transparent);
+}
+
+.dgm-section-center-title::after {
+  background: linear-gradient(to right, currentColor, transparent);
+}
+
 
 .dgm-section-subtitle {
   display: block;
