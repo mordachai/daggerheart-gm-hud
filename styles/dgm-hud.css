@@ -10,6 +10,8 @@
   --dgm-accent-ink: #2b220a;
   --dgm-ring-frame: url("../assets/ui/dgm-hud-frame.webp");
   --dgm-ring-overlap: 2px;
+  --dgm-ring-scale: 90px;
+
 }
 
 /* ===== REMOVE APPLICATION V2 WINDOW CHROME ===== */
@@ -56,12 +58,12 @@
 /* ===== CORE AREA (main circle with stats) ===== */
 .dgm-core {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 0;
 }
 
 /* HP/Stress counters positioned around portrait */
@@ -110,6 +112,54 @@
   transform: scale(1.05);
 }
 
+.dgm-hud .measured-template-button,
+.dgm-hud .enriched-damage-button,
+.dgm-hud .duality-roll-button {
+  color: var(--dgm-accent);
+  background: var(--dgm-surface);
+  border: 2px solid var(--dgm-accent);
+  display: inline;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.dgm-hud .measured-template-button:hover,
+.dgm-hud .enriched-damage-button:hover,
+.dgm-hud .duality-roll-button:hover {
+  color: var(--dgm-surface);
+  background: var(--dgm-accent);
+  border: 2px solid var(--dgm-surface);
+  font-weight: 700;
+  outline: none;
+  box-shadow: none;
+}
+
+.dgm-hud .content-link {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-end;
+  width: fit-content;
+  gap: 3px;
+  background: var(--dgm-surface);
+  border: 1px solid #f2c24b;
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: var(--dgm-text);
+  cursor: grab;
+  text-shadow: none;
+}
+
+.dgm-hud .content-link:hover {
+  border: 1px solid var(--dgm-accent);
+  color: var(--dgm-accent);
+  text-shadow: none;
+}
+
+.dgm-hud .content-link i {font-size: 0.8rem; color: #f2c24b; }
+.dgm-hud .content-link:hover i { color: var(--dgm-accent); }
+
 .dgm-count--stress {
   top: 55px;
   right: -10px;
@@ -145,8 +195,7 @@
   z-index: 10;
 }
 
-/* Portrait (center) */
-.dgm-portrait {
+/* .dgm-portrait {
   width: 90px;
   height: 90px;
   border-radius: 50%;
@@ -154,28 +203,86 @@
   position: relative;
   z-index: 5;
   cursor: grab;
-  
-  /* Ring frame overlay */
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--dgm-muted), var(--dgm-surface));
+}
+
+.dgm-portrait-img {
+  object-fit: cover;
+  object-position: center top;
+  transform: scale(1.5);
+  transform-origin: center top;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none;
+  z-index: 2;
+  display: block;
+  width: 90px !important;
+  height: 90px !important;
+  border-radius: 50%;
+}
+
+.dgm-portrait::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--dgm-ring-scale);
+  height: var(--dgm-ring-scale);
+  transform: translate(-50%, -50%);
   background-image: var(--dgm-ring-frame);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-}
-
-.dgm-portrait:hover {
-  filter: brightness(1.1);
-}
-
-.dgm-portrait-img {
-  width: calc(100% - calc(var(--dgm-ring-overlap) * 2));
-  height: calc(100% - calc(var(--dgm-ring-overlap) * 2));
-  object-fit: contain;
   border-radius: 50%;
-  position: absolute;
-  top: var(--dgm-ring-overlap);
-  left: var(--dgm-ring-overlap);
-  z-index: 1;
+  z-index: 3;
+  pointer-events: none;
+} */
+
+/* Create a wrapper for the portrait that allows overflow */
+.dgm-portrait-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  z-index: 5;
 }
+
+.dgm-portrait {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden; /* Keep this for the image clipping */
+  position: relative;
+  cursor: grab;
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(closest-side, var(--dgm-muted), var(--dgm-surface));
+}
+
+/* Move the ring frame to the wrapper level */
+.dgm-portrait-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--dgm-ring-scale);
+  height: var(--dgm-ring-scale);
+  transform: translate(-50%, -50%);
+  background-image: var(--dgm-ring-frame);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Remove the old ::after from .dgm-portrait */
 
 /* Attack button (top-right of portrait) with ring frame */
 .dgm-attack {
@@ -380,7 +487,23 @@
   font-weight: 700;
   color: var(--dgm-accent);
   margin-bottom: 8px;
-  marker: none;
+  list-style: none !important;
+}
+
+.dgm-section summary::-webkit-details-marker {
+  display: none !important;
+}
+
+.dgm-header details summary {
+  list-style: none !important;
+}
+
+.dgm-header details summary::-webkit-details-marker {
+  display: none !important;
+}
+
+.dgm-header details summary::marker {
+  display: none !important;
 }
 
 .dgm-section-content {
@@ -451,16 +574,23 @@
   flex: 0 0 auto;
   border-radius: 4px;
   border: 1px solid var(--dgm-border);
+  cursor: default; /* Default cursor for non-clickable */
 }
 
 .dgm-feature-icon.clickable {
   cursor: pointer;
-  border-color: var(--dgm-accent);
+  border: 1px solid var(--dgm-muted); /* Thicker border for clickable */
 }
 
 .dgm-feature-icon.clickable:hover {
   border-color: var(--dgm-accent);
-  box-shadow: 0 0 4px rgba(242, 194, 75, 0.4);
+  box-shadow: 0 0 4px var(--dgm-muted);
+  filter: brightness(1.5);
+}
+
+.dgm-feature-icon:not(.clickable) {
+  cursor: default;
+  opacity: 0.8; /* Optional: make non-clickable icons slightly dimmed */
 }
 
 .dgm-feature-name {

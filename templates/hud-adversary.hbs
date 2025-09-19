@@ -28,9 +28,10 @@
     </div>
 
     {{!-- Portrait with hover info --}}
-    <div class="dgm-portrait" 
-         title="{{adversaryName}} - Tier {{tier}}">
-      <img class="dgm-portrait-img" src="{{portrait}}" alt="{{adversaryName}}">
+    <div class="dgm-portrait-wrapper">
+      <div class="dgm-portrait" title="{{adversaryName}} - Tier {{tier}}">
+        <img class="dgm-portrait-img" src="{{portrait}}" alt="{{adversaryName}}">
+      </div>
     </div>
 
     {{!-- Attack area (top-right) --}}
@@ -124,20 +125,20 @@
             <details>
               <summary>
                 {{!-- Feature Icon (clickable if has actions) --}}
-                <img class="dgm-feature-icon{{#if (hasActions this)}} clickable{{/if}}"
-                     src="{{img}}"
-                     alt="{{name}}"
-                     role="button"
-                     tabindex="0"
-                     data-action="{{#if (hasActions this)}}feature-exec{{else}}feature-info{{/if}}"
-                     data-feature-id="{{id}}"
-                     title="{{name}}">
+                <img class="dgm-feature-icon{{#if (hasActions _item)}} clickable{{/if}}"
+                    src="{{img}}"
+                    alt="{{name}}"
+                    role="button"
+                    tabindex="0"
+                    data-action="{{#if (hasActions _item)}}feature-exec{{else}}feature-info{{/if}}"
+                    data-feature-id="{{id}}"
+                    title="{{name}}">
 
                 {{!-- Feature Name --}}
                 <span class="dgm-feature-name">{{truncate name 25}}</span>
 
                 {{!-- Resource Info (uses, etc.) --}}
-                {{#with (getResourceInfo this)}}
+                {{#with (getResourceInfo _item)}}
                 {{#if this}}
                 <span class="dgm-feature-resource">
                   {{#if max}}{{value}}/{{max}}{{else}}{{value}}{{/if}}
@@ -156,7 +157,7 @@
 
               {{!-- Feature Description (expanded content) --}}
               <div class="dgm-feature-content">
-                {{{system.description}}}
+                {{{description}}}
               </div>
             </details>
           </li>

@@ -2,7 +2,7 @@
 
 import { getSetting, SETTINGS, debugLog, applyThemeToElement } from "../settings.mjs";
 import { sendItemToChat } from "../helpers/chat-utils.mjs";
-
+import { enrichItemDescription, toHudInlineButtons } from "../helpers/inline-rolls.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -60,7 +60,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     window: { title: "Daggerheart GM HUD", positioned: false, resizable: false }, // Set to false
     position: { width: "auto", height: "auto" },
     classes: ["daggerheart-gm-hud", "app"]
-  };
+  };  
 
   static PARTS = {
     body: { template: "modules/daggerheart-gm-hud/templates/hud-adversary.hbs" }
@@ -207,6 +207,29 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         return;
       }
 
+      // Inline roll buttons
+      const inlineRoll = ev.target.closest("[data-action='inline-roll']");
+      if (inlineRoll) {
+        stop(ev);
+        const formula = inlineRoll.dataset.formula;
+        if (formula) {
+          const roll = new Roll(formula, actor.getRollData());
+          roll.toMessage({ speaker: ChatMessage.getSpeaker({ actor }) });
+        }
+        return;
+      }
+
+      // Inline duality roll buttons  
+      const inlineDuality = ev.target.closest("[data-action='inline-duality']");
+      if (inlineDuality) {
+        stop(ev);
+        const params = inlineDuality.dataset.params;
+        if (params) {
+          ui.chat?.processMessage?.(`/dr ${params}`);
+        }
+        return;
+      }
+
     }, true);
 
     // Right-click for resource adjustments (HP/Stress)
@@ -252,6 +275,23 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
           await this._adjustResource(actor, "system.resources.stress.value", -1, { min: 0, max });
           return;
         }
+      }
+    }, true);
+
+    // Double-click to open actor sheet
+    rootEl.addEventListener("dblclick", async (ev) => {
+      const actor = this.actor;
+      if (!actor) return;
+
+      // Check if double-click was on the portrait or core area
+      const portrait = ev.target.closest(".dgm-portrait, .dgm-core");
+      if (portrait) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        
+        debugLog("Double-click detected, opening actor sheet for:", actor.name);
+        actor.sheet?.render(true, { focus: true });
+        return;
       }
     }, true);
 
@@ -382,8 +422,26 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       severe: Number(sys.damageThresholds?.severe ?? 0)
     };
 
-    // Features - pass raw items to template, let helpers handle logic
-    const features = actor.items.filter(item => item.type === "feature");
+    // Features section:
+    const featureItems = actor.items.filter(item => item.type === "feature");
+    const features = await Promise.all(
+      featureItems.map(async (item) => {
+        // Step 1: Enrich with Foundry (handles @UUID, @Template, etc.)
+        const enrichedHTML = await enrichItemDescription(item);
+        
+        // Step 2: Convert inline rolls to clickable buttons
+        const finalHTML = toHudInlineButtons(enrichedHTML, { enableDuality: true });
+        
+        return {
+          id: item.id,
+          name: item.name || "Unnamed Feature",
+          img: item.img || "icons/svg/aura.svg", 
+          description: finalHTML, // Use the final processed HTML
+          system: item.system,
+          _item: item
+        };
+      })
+    );
 
     return {
       adversaryName,

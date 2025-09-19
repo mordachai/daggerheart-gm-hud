@@ -179,16 +179,12 @@ Hooks.on("canvasReady", () => {
 /**
  * Handle actor updates that might affect the displayed HUD
  */
-Hooks.on("updateActor", (actor, changes) => {
-  // Only handle for GMs and if we have a HUD open
+// In the updateActor hook:
+Hooks.on("updateActor", async (actor, changes) => {  // Add async here
   if (!game.user.isGM || !_gmHudApp) return;
   
-  // Check if this update affects the currently displayed actor
   if (_gmHudApp.actor?.id === actor.id) {
     debugLog("Displayed actor updated, refreshing HUD:", actor.name, changes);
-    
-    // TODO: Implement HUD refresh logic
-    // For now, just recreate the HUD
     const currentToken = getControlledAdversaryToken();
     if (currentToken && currentToken.actor.id === actor.id) {
       createOrUpdateGMHUD(currentToken);
