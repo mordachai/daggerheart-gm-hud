@@ -67,11 +67,13 @@
             tabindex="0"
             data-action="roll-attack"
             data-attack-id="{{primaryAttack.id}}"
-            title="{{primaryAttack.name}} ({{signed primaryAttack.bonus}}, {{primaryAttack.range}}, {{formatDamage primaryAttack.damage}}, {{extractDamageTypes primaryAttack.damage}})">
+            title="{{primaryAttack.name}} ({{signed primaryAttack.bonus}})">
           <img class="dgm-attack-icon" src="{{primaryAttack.img}}" alt="{{primaryAttack.name}}">
-          <div class="dgm-attack-bonus">{{signed primaryAttack.bonus}}</div>
           <div class="dgm-attack-info">
-            {{!-- <div class="dgm-attack-name">{{primaryAttack.name}}</div> --}}
+            <div class="dgm-count dgm-count--attack-bonus">
+              <div class="dgm-attack-bonus"><i class="fa-solid fa-swords"></i></div>
+              <div class="dgm-attack-bonus">{{signed primaryAttack.bonus}}</div>
+            </div>
             <div class="dgm-attack-details">
               {{primaryAttack.range}}
             </div>

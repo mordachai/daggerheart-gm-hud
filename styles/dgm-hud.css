@@ -128,15 +128,23 @@
   cursor: default;
   user-select: none;
   gap: 2px;
+  filter: drop-shadow(0 0 1px var(--dgm-surface));
+}
+
+.dgm-count i {
+  color: var(--dgm-accent);
 }
 
 .dgm-count .label {
   color: var(--dgm-accent);
   font-size: 18px;
+  filter: drop-shadow(0 0 1px var(--dgm-surface));
+
 }
 
 .dgm-count .info {
   font-size: 22px;
+  filter: drop-shadow(0 0 1px var(--dgm-surface));
 }
 
 .dgm-count .value:hover {
@@ -157,6 +165,7 @@
   justify-content: center;
   font-weight: 800;
   font-size: 14px;
+  filter: drop-shadow(0 0 3px var(--dgm-surface));
 }
 
 /* ===== CORE SECTION ===== */
@@ -279,7 +288,8 @@
   z-index: 2;
 }
 
-.dgm-attack-bonus {
+/*OLD Badge CSS*/
+/* .dgm-attack-bonus {
   position: absolute;
   top: -4px;
   right: -4px;
@@ -294,6 +304,11 @@
   font-size: 14px;
   font-weight: 600;
   z-index: 10;
+} */
+
+.dgm-attack-bonus i {
+  color: var(--dgm-accent);
+  filter: drop-shadow(0 0 1px var(--dgm-surface));
 }
 
 .dgm-attack-info {
@@ -305,14 +320,21 @@
 }
 
 .dgm-attack-details {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   text-transform: uppercase;
+  filter: drop-shadow(0 0 1px var(--dgm-surface));
 }
 
 .dgm-attack-damage {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
+  filter: drop-shadow(0 0 1px var(--dgm-surface));
+}
+
+.dgm-attack-damage i {
+  color: var(--dgm-accent);
+  filter: drop-shadow(0 0 1px var(--dgm-surface));
 }
 
 /* ===== DAMAGE THRESHOLDS SECTION ===== */
