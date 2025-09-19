@@ -10,8 +10,7 @@
   --dgm-accent-ink: #2b220a;
   --dgm-ring-frame: url("../assets/ui/dgm-hud-frame.webp");
   --dgm-ring-overlap: 2px;
-  --dgm-ring-scale: 90px;
-
+  --dgm-ring-scale: 84px;
 }
 
 /* ===== REMOVE APPLICATION V2 WINDOW CHROME ===== */
@@ -55,52 +54,52 @@
   gap: 8px;
 }
 
-/* ===== CORE AREA (main circle with stats) ===== */
-.dgm-core {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-/* HP/Stress counters positioned around portrait */
-.dgm-count {
-  position: absolute;
+/* ===== NEW CONTAINER SYSTEM ===== */
+.dgm-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.1;
-  pointer-events: auto;
-  cursor: pointer;
-  user-select: none;
+  gap: 4px;
+  min-width: 320px;
 }
 
-.dgm-count--hp {
-  top: 5px;
-  left: 15px;
+.dgm-top-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
 }
 
-/* Reaction Roll Button (floating below HP) */
+.dgm-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  position: relative;
+}
+
+/* ===== RESOURCES SECTION ===== */
+.dgm-section--resources {
+  gap: 6px;
+  min-width: 70px;
+}
+
 .dgm-reaction-roll {
-  position: absolute;
-  top: 35px;
-  left: 10px;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 2px solid var(--dgm-border);
+  border: 2px double var(--dgm-accent);
   background: var(--dgm-surface);
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--dgm-accent);
 }
 
@@ -112,6 +111,250 @@
   transform: scale(1.05);
 }
 
+.dgm-button-label {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dgm-count {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.1;
+  pointer-events: auto;
+  cursor: default;
+  user-select: none;
+  gap: 2px;
+}
+
+.dgm-count .label {
+  color: var(--dgm-accent);
+  font-size: 18px;
+}
+
+.dgm-count .info {
+  font-size: 22px;
+}
+
+.dgm-count .value:hover {
+  font-weight: 600;
+  text-shadow: 0 0 3px var(--dgm-accent);
+  cursor: pointer;
+}
+
+.dgm-difficulty {
+  background: var(--dgm-surface);
+  color: var(--dgm-accent);
+  border: 2px solid var(--dgm-border);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* ===== CORE SECTION ===== */
+.dgm-section--core {
+  gap: 6px;
+  min-width: 100px;
+}
+
+.dgm-portrait-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.dgm-portrait {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  cursor: grab;
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(closest-side, var(--dgm-muted), var(--dgm-surface));
+}
+
+.dgm-portrait-img {
+  object-fit: cover;
+  object-position: center top;
+  transform: scale(1.5);
+  transform-origin: center top;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none;
+  z-index: 2;
+  display: block;
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 50%;
+}
+
+.dgm-portrait-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--dgm-ring-scale);
+  height: var(--dgm-ring-scale);
+  transform: translate(-50%, -50%);
+  background-image: var(--dgm-ring-frame);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.dgm-features-toggle {
+  width: 70px;
+  height: 28px;
+  border-radius: 14px;
+  border: 2px solid var(--dgm-border);
+  background: var(--dgm-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: var(--dgm-accent);
+  font-size: 10px;
+}
+
+.dgm-features-toggle:hover,
+.dgm-features-toggle:focus {
+  border-color: var(--dgm-accent);
+  background: var(--dgm-accent);
+  color: var(--dgm-accent-ink);
+}
+
+.dgm-features-toggle[aria-expanded="true"] {
+  background: var(--dgm-accent);
+  color: var(--dgm-accent-ink);
+}
+
+/* ===== ATTACK SECTION ===== */
+.dgm-section--attack {
+  gap: 6px;
+  min-width: 70px;
+  max-width: 100px;
+}
+
+.dgm-attack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.dgm-attack:hover,
+.dgm-attack:focus {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.dgm-attack-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 2px solid var(--dgm-muted);
+  background: var(--dgm-surface);
+  z-index: 2;
+}
+
+.dgm-attack-bonus {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--dgm-accent);
+  color: var(--dgm-accent-ink);
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 10;
+}
+
+.dgm-attack-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.dgm-attack-details {
+  font-size: 18px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.dgm-attack-damage {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* ===== DAMAGE THRESHOLDS SECTION ===== */
+.dgm-section--thresholds {
+  padding: 6px 12px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.dgm-thresholds {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.15rem;
+  pointer-events: none;
+}
+
+.dgm-threshold-chip {
+  background: var(--dgm-surface);
+  color: var(--dgm-accent);
+  padding: 0.14rem 0.6rem;
+  border-radius: 8px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.dgm-threshold-val {
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--dgm-border);
+  border-radius: 8px;
+  background: var(--dgm-surface);
+  color: var(--dgm-text);
+  font-weight: 800;
+  min-width: 2.2ch;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* ===== UTILITY STYLES (from original) ===== */
 .dgm-hud .measured-template-button,
 .dgm-hud .enriched-damage-button,
 .dgm-hud .duality-roll-button {
@@ -160,212 +403,7 @@
 .dgm-hud .content-link i {font-size: 0.8rem; color: #f2c24b; }
 .dgm-hud .content-link:hover i { color: var(--dgm-accent); }
 
-.dgm-count--stress {
-  top: 55px;
-  right: -10px;
-}
-
-.dgm-count .label {
-  color: var(--dgm-accent);
-  font-size: 14px;
-  margin-bottom: 2px;
-}
-
-.dgm-count .value:hover {
-  font-weight: 800;
-  text-shadow: 0 0 3px var(--dgm-accent);
-}
-
-/* Difficulty badge (bottom-left corner) */
-.dgm-difficulty {
-  position: absolute;
-  bottom: -5px;
-  left: -5px;
-  background: var(--dgm-surface);
-  color: var(--dgm-accent);
-  border: 2px solid var(--dgm-border);
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 14px;
-  z-index: 10;
-}
-
-/* .dgm-portrait {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  overflow: hidden;
-  position: relative;
-  z-index: 5;
-  cursor: grab;
-  margin: 0;
-  padding: 0;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--dgm-muted), var(--dgm-surface));
-}
-
-.dgm-portrait-img {
-  object-fit: cover;
-  object-position: center top;
-  transform: scale(1.5);
-  transform-origin: center top;
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none;
-  z-index: 2;
-  display: block;
-  width: 90px !important;
-  height: 90px !important;
-  border-radius: 50%;
-}
-
-.dgm-portrait::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: var(--dgm-ring-scale);
-  height: var(--dgm-ring-scale);
-  transform: translate(-50%, -50%);
-  background-image: var(--dgm-ring-frame);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border-radius: 50%;
-  z-index: 3;
-  pointer-events: none;
-} */
-
-/* Create a wrapper for the portrait that allows overflow */
-.dgm-portrait-wrapper {
-  position: relative;
-  width: 90px;
-  height: 90px;
-  z-index: 5;
-}
-
-.dgm-portrait {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  overflow: hidden; /* Keep this for the image clipping */
-  position: relative;
-  cursor: grab;
-  margin: 0;
-  padding: 0;
-  background: radial-gradient(closest-side, var(--dgm-muted), var(--dgm-surface));
-}
-
-/* Move the ring frame to the wrapper level */
-.dgm-portrait-wrapper::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: var(--dgm-ring-scale);
-  height: var(--dgm-ring-scale);
-  transform: translate(-50%, -50%);
-  background-image: var(--dgm-ring-frame);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border-radius: 50%;
-  z-index: 3;
-  pointer-events: none;
-}
-
-/* Remove the old ::after from .dgm-portrait */
-
-/* Attack button (top-right of portrait) with ring frame */
-.dgm-attack {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-image: var(--dgm-ring-frame);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dgm-attack:hover,
-.dgm-attack:focus {
-  filter: brightness(1.1);
-  transform: scale(1.05);
-}
-
-.dgm-attack-icon {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  border-radius: 50%;
-  z-index: 2;
-}
-
-.dgm-attack-bonus {
-  position: absolute;
-  bottom: -8px;
-  left: -8px;
-  background: var(--dgm-accent);
-  color: var(--dgm-accent-ink);
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 800;
-  z-index: 10;
-}
-
-/* Features toggle (bottom-right of core, but above thresholds) */
-.dgm-features-toggle {
-  position: absolute;
-  bottom: 15px;
-  right: 5px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid var(--dgm-border);
-  background: var(--dgm-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 800;
-  color: var(--dgm-accent);
-}
-
-.dgm-features-toggle:hover,
-.dgm-features-toggle:focus {
-  border-color: var(--dgm-accent);
-  background: var(--dgm-accent);
-  color: var(--dgm-accent-ink);
-}
-
-.dgm-features-toggle[aria-expanded="true"] {
-  background: var(--dgm-accent);
-  color: var(--dgm-accent-ink);
-}
-
-/* ===== FEATURES PANEL ===== */
+/* ===== FEATURES PANEL (unchanged from original) ===== */
 .dgm-tabwrap {
   position: relative;
 }
@@ -374,7 +412,7 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(100% + 8px); /* Default: open upward */
+  bottom: calc(100% + 8px);
   width: 320px;
   max-height: 70vh;
   background: var(--dgm-panel);
@@ -387,7 +425,6 @@
   z-index: 100;
 }
 
-/* Panel direction variants (will be set by JS) */
 .dgm-panel[data-open-dir="down"] {
   top: calc(100% + 8px);
   bottom: auto;
@@ -398,12 +435,10 @@
   top: auto;
 }
 
-/* Show panel when features are toggled */
 .dgm-hud[data-open="features"] .dgm-panel--features {
   display: block;
 }
 
-/* Panel Header */
 .dgm-panel-header {
   display: flex;
   flex-direction: column;
@@ -452,7 +487,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  white-space: nowrap ;
+  white-space: nowrap;
 }
 
 .dgm-line {
@@ -463,12 +498,7 @@
     mask-image: linear-gradient(270deg, transparent 0%, black 50%, transparent 100%);
 }
 
-/* Panel Sections */
 .dgm-header {
-  margin-bottom: 12px;
-}
-
-.dgm-section {
   margin-bottom: 12px;
 }
 
@@ -536,7 +566,6 @@
   margin-bottom: 6px;
 }
 
-/* Features List (Accordion) */
 .dgm-features-list {
   margin-top: 8px;
 }
@@ -574,12 +603,12 @@
   flex: 0 0 auto;
   border-radius: 4px;
   border: 1px solid var(--dgm-border);
-  cursor: default; /* Default cursor for non-clickable */
+  cursor: default;
 }
 
 .dgm-feature-icon.clickable {
   cursor: pointer;
-  border: 1px solid var(--dgm-muted); /* Thicker border for clickable */
+  border: 1px solid var(--dgm-muted);
 }
 
 .dgm-feature-icon.clickable:hover {
@@ -590,7 +619,7 @@
 
 .dgm-feature-icon:not(.clickable) {
   cursor: default;
-  opacity: 0.8; /* Optional: make non-clickable icons slightly dimmed */
+  opacity: 0.8;
 }
 
 .dgm-feature-name {
@@ -641,43 +670,39 @@
   padding: 16px;
 }
 
-/* ===== DAMAGE THRESHOLDS (below core) ===== */
-.dgm-thresholds {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: .5rem;
-  margin-top: .25rem;
-  pointer-events: none;
-}
-
-.dgm-threshold-chip {
-  background: var(--dgm-surface);
-  color: var(--dgm-accent);
-  padding: .14rem .6rem;
-  border-radius: 8px;
-  font-weight: 900;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  font-size: 11px;
-}
-
-.dgm-threshold-val {
-  padding: .1rem .45rem;
-  border: 1px solid var(--dgm-border);
-  border-radius: 8px;
-  background: var(--dgm-surface);
-  color: var(--dgm-text);
-  font-weight: 800;
-  min-width: 2.2ch;
-  text-align: center;
-  font-size: 12px;
-}
-
 /* ===== RESPONSIVENESS ===== */
 @media (max-width: 600px) {
+  .dgm-container {
+    min-width: 280px;
+  }
+  
+  .dgm-top-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .dgm-section--resources,
+  .dgm-section--core,
+  .dgm-section--attack {
+    min-width: 260px;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  
   .dgm-panel {
     width: 280px;
     max-height: 60vh;
+  }
+}
+
+@media (max-width: 400px) {
+  .dgm-container {
+    min-width: 240px;
+  }
+  
+  .dgm-section--resources,
+  .dgm-section--core,
+  .dgm-section--attack {
+    min-width: 220px;
   }
 }

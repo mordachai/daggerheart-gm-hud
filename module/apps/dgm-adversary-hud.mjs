@@ -391,16 +391,43 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       max: Number(sys.resources?.stress?.max ?? 0)
     };
 
-    // Primary attack - simplified
+    // Primary attack - with damage type detection
     let primaryAttack = null;
     if (sys.attack) {
+      // Extract damage type from the first damage part
+      let damageType = null;
+      let damageTypeIcon = null;
+      
+      if (sys.attack.damage?.parts?.length > 0) {
+        const firstPart = sys.attack.damage.parts[0];
+        if (firstPart.type && firstPart.type.size > 0) {
+          // Extract first value from Set
+          damageType = [...firstPart.type][0].toLowerCase();
+          
+          // Map damage types to icons
+          switch(damageType) {
+            case 'physical':
+              damageTypeIcon = 'fa-solid fa-hand-fist';
+              break;
+            case 'magical':
+            case 'magic':
+              damageTypeIcon = 'fa-solid fa-wand-magic-sparkles';
+              break;
+            default:
+              damageTypeIcon = null;
+          }
+        }
+      }
+
       primaryAttack = {
         id: sys.attack._id || "primary",
         name: sys.attack.name || "Attack",
         img: sys.attack.img || "icons/svg/sword.svg",
         bonus: Number(sys.attack.roll?.bonus ?? 0),
         range: sys.attack.range || "close",
-        damage: sys.attack.damage // Let template helpers handle formatting
+        damage: sys.attack.damage,
+        damageType: damageType,
+        damageTypeIcon: damageTypeIcon
       };
     }
 

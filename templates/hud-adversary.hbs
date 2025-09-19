@@ -1,80 +1,113 @@
 <section class="dgm-hud dgm-hud--layout" data-open="">
   
-  {{!-- =============== CORE (center area) =============== --}}
-  <div class="dgm-core">
+  {{!-- =============== MAIN CONTAINER =============== --}}
+  <div class="dgm-container">
     
-    {{!-- HP Counter (top-left) --}}
-    <div class="dgm-count dgm-count--hp" title="Hit Points">
-      <div class="label"><i class="fa-solid fa-heart"></i></div>
-      <div class="value" data-bind="hp">{{hp.value}}/{{hp.max}}</div>
-    </div>
+    {{!-- =============== TOP ROW =============== --}}
+    <div class="dgm-top-row">
+      
+      {{!-- RESOURCES SECTION (Green - Left) --}}
+      <div class="dgm-section dgm-section--resources">
+        {{!-- Reaction Roll Button --}}
+        <div class="dgm-reaction-roll dgm-roll"
+             role="button"
+             tabindex="0"
+             data-action="roll-reaction"
+             title="Reaction Roll">
+          <i class="fa-solid fa-reply"></i>
+          {{!-- <span class="dgm-button-label">Reaction</span> --}}
+        </div>
 
-    {{!-- Reaction Roll Button (floating below HP) --}}
-    <div class="dgm-reaction-roll dgm-roll"
-         role="button"
-         tabindex="0"
-         data-action="roll-reaction"
-         title="Reaction Roll">
-      <i class="fa-solid fa-reply"></i>
-    </div>
+        {{!-- HP Counter --}}
+        <div class="dgm-count dgm-count--hp" title="Hit Points">
+          <div class="label"><i class="fa-solid fa-heart"></i></div>
+          <div class="value" data-bind="hp">{{hp.value}}/{{hp.max}}</div>
+        </div>
 
-    {{!-- Difficulty Badge (bottom-left) --}}
-    <div class="dgm-difficulty" title="Difficulty">{{difficulty}}</div>
+        {{!-- Stress Counter --}}
+        <div class="dgm-count dgm-count--stress" title="Stress">
+          <div class="label"><i class="fa-solid fa-bolt"></i></div>
+          <div class="value" data-bind="stress">{{stress.value}}/{{stress.max}}</div>
+        </div>
 
-    {{!-- Stress Counter (below attack ring) --}}
-    <div class="dgm-count dgm-count--stress" title="Stress">
-      <div class="label"><i class="fa-solid fa-bolt"></i></div>
-      <div class="value" data-bind="stress">{{stress.value}}/{{stress.max}}</div>
-    </div>
+        {{!-- Difficulty Counter --}}
+        <div class="dgm-count dgm-count--difficulty" title="Difficulty">
+          <div class="label"><i class="fa-solid fa-shield"></i></div>
+          <div class="info" title="Difficulty">{{difficulty}}</div>
+        </div>
+      </div>
 
-    {{!-- Portrait with hover info --}}
-    <div class="dgm-portrait-wrapper">
-      <div class="dgm-portrait" title="{{adversaryName}} - Tier {{tier}}">
-        <img class="dgm-portrait-img" src="{{portrait}}" alt="{{adversaryName}}">
+      {{!-- CORE SECTION (Center) - Keep dgm-core class for dragging --}}
+      <div class="dgm-section dgm-section--core dgm-core">
+        {{!-- Features Toggle on top --}}
+        <div class="dgm-features-toggle dgm-tab"
+             role="button"
+             tabindex="0"
+             data-tab="features"
+             data-action="toggle-features"
+             aria-controls="dgm-features-panel"
+             aria-expanded="false"
+             title="Toggle Features">
+          <span class="dgm-features-icon">Features</span>
+        </div>
+
+        {{!-- Portrait below --}}
+        <div class="dgm-portrait-wrapper">
+          <div class="dgm-portrait" title="{{adversaryName}} - Tier {{tier}}">
+            <img class="dgm-portrait-img" src="{{portrait}}" alt="{{adversaryName}}">
+          </div>
+        </div>
+      </div>
+
+      {{!-- ATTACK SECTION (Blue - Right) --}}
+      <div class="dgm-section dgm-section--attack">
+        {{#if primaryAttack}}
+        <div class="dgm-attack dgm-roll"
+            role="button"
+            tabindex="0"
+            data-action="roll-attack"
+            data-attack-id="{{primaryAttack.id}}"
+            title="{{primaryAttack.name}} ({{signed primaryAttack.bonus}}, {{primaryAttack.range}}, {{formatDamage primaryAttack.damage}}, {{extractDamageTypes primaryAttack.damage}})">
+          <img class="dgm-attack-icon" src="{{primaryAttack.img}}" alt="{{primaryAttack.name}}">
+          <div class="dgm-attack-bonus">{{signed primaryAttack.bonus}}</div>
+          <div class="dgm-attack-info">
+            {{!-- <div class="dgm-attack-name">{{primaryAttack.name}}</div> --}}
+            <div class="dgm-attack-details">
+              {{primaryAttack.range}}
+            </div>
+            <div class="dgm-attack-damage">
+              {{formatDamage primaryAttack.damage}}
+              {{#if primaryAttack.damageTypeIcon}}
+              <i class="{{primaryAttack.damageTypeIcon}}"></i>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+        {{else}}
+        <div class="dgm-attack" title="No attack available">
+          <img class="dgm-attack-icon" src="icons/svg/sword.svg" alt="No attack">
+          <div class="dgm-attack-info">
+            <div class="dgm-attack-name">No Attack</div>
+          </div>
+        </div>
+        {{/if}}
       </div>
     </div>
 
-    {{!-- Attack area (top-right) --}}
-    {{#if primaryAttack}}
-    <div class="dgm-attack dgm-roll"
-        role="button"
-        tabindex="0"
-        data-action="roll-attack"
-        data-attack-id="{{primaryAttack.id}}"
-        title="{{primaryAttack.name}} ({{signed primaryAttack.bonus}}, {{primaryAttack.range}}, {{formatDamage primaryAttack.damage}}, {{extractDamageTypes primaryAttack.damage}})">
-      <img class="dgm-attack-icon" src="{{primaryAttack.img}}" alt="{{primaryAttack.name}}">
-      <div class="dgm-attack-bonus">{{signed primaryAttack.bonus}}</div>
+    {{!-- =============== BOTTOM ROW =============== --}}
+    {{!-- DAMAGE THRESHOLDS SECTION (Red - Bottom) --}}
+    <div class="dgm-section dgm-section--thresholds">
+      <div class="dgm-thresholds" aria-label="Damage thresholds">
+        <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.minor'}}</span>
+        <span class="dgm-threshold-val">{{thresholds.major}}</span>
+        <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.major'}}</span>
+        <span class="dgm-threshold-val">{{thresholds.severe}}</span>
+        <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.severe'}}</span>
+      </div>
     </div>
-    {{else}}
-    <div class="dgm-attack" title="No attack available">
-      <img class="dgm-attack-icon" src="icons/svg/sword.svg" alt="No attack">
-    </div>
-    {{/if}}
-
-    {{!-- Features Toggle (bottom-right) --}}
-    <div class="dgm-features-toggle dgm-tab"
-         role="button"
-         tabindex="0"
-         data-tab="features"
-         data-action="toggle-features"
-         aria-controls="dgm-features-panel"
-         aria-expanded="false"
-         title="Toggle Features">
-      <span class="dgm-features-icon">F</span>
-    </div>
-
   </div>
 
-  {{!-- Damage Thresholds (below core) --}}
-  <div class="dgm-thresholds" aria-label="Damage thresholds">
-    <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.minor'}}</span>
-    <span class="dgm-threshold-val">{{thresholds.major}}</span>
-    <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.major'}}</span>
-    <span class="dgm-threshold-val">{{thresholds.severe}}</span>
-    <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.severe'}}</span>
-  </div>
-
-{{!-- =============== FEATURES PANEL (expandable) =============== --}}
+{{!-- =============== FEATURES PANEL (unchanged) =============== --}}
   <div class="dgm-tabwrap">
     <div id="dgm-features-panel" 
          class="dgm-panel dgm-panel--features" 
@@ -169,6 +202,5 @@
 
     </div>
   </div>
-
 
 </section>

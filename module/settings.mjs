@@ -17,6 +17,20 @@ export async function setSetting(key, value) {
   return game.settings.set(MODULE_ID, key, value);
 }
 
+// Move this function outside and make it available
+function updateRingFrameScale(value) {
+  // Match the CSS default of 84px for the new layout
+  const baseSize = 84;
+  const scaleFactor = 1 + (value / 100);
+  const newSize = Math.round(baseSize * scaleFactor);
+  
+  document.documentElement.style.setProperty('--dgm-ring-scale', `${newSize}px`);
+  
+  if (getSetting(SETTINGS.debug)) {
+    console.log(`[GM HUD] Ring frame scale updated to ${value}% (${newSize}px)`);
+  }
+}
+
 export function registerGMHUDSettings() {
   
   // Theme Selector
@@ -35,7 +49,8 @@ export function registerGMHUDSettings() {
     },
     default: "default",
     onChange: (value) => {
-      updateRingFrameScale(value); // Extract to separate function
+      // Apply theme logic here if needed
+      debugLog(`Theme changed to: ${value}`);
     }
   });
 
@@ -48,30 +63,30 @@ export function registerGMHUDSettings() {
     type: String,
     default: "",
     filePicker: "image",
-      onChange: (value) => {
-        console.log("[DEBUG] File picker returned:", value);
-        
-        // Update CSS variable for ring frame
-        let frameUrl;
-        if (value.trim()) {
-          // For user-selected images, ensure they're relative to the root
-          const imagePath = value.startsWith('/') ? value : `/${value}`;
-          frameUrl = `url("${imagePath}")`;
-        } else {
-          // Default frame
-          frameUrl = `url("modules/${MODULE_ID}/assets/ui/dgm-hud-frame.webp")`;
-        }
-        
-        document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
-        
-        if (getSetting(SETTINGS.debug)) {
-          console.log(`[GM HUD] Ring frame updated:`, frameUrl);
-        }
+    onChange: (value) => {
+      console.log("[DEBUG] File picker returned:", value);
+      
+      // Update CSS variable for ring frame
+      let frameUrl;
+      if (value.trim()) {
+        // For user-selected images, ensure they're relative to the root
+        const imagePath = value.startsWith('/') ? value : `/${value}`;
+        frameUrl = `url("${imagePath}")`;
+      } else {
+        // Default frame
+        frameUrl = `url("modules/${MODULE_ID}/assets/ui/dgm-hud-frame.webp")`;
       }
+      
+      document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
+      
+      if (getSetting(SETTINGS.debug)) {
+        console.log(`[GM HUD] Ring frame updated:`, frameUrl);
+      }
+    }
   });
 
   // Ring Frame Scale
-  game.settings.register(MODULE_ID, "ringFrameScale", {
+  game.settings.register(MODULE_ID, SETTINGS.ringFrameScale, {
     name: "Ring Frame Scale",
     hint: "Adjust the size of the ring frame overlay. 0 is default size, negative values make it smaller, positive values make it larger.",
     scope: "client",
@@ -84,16 +99,7 @@ export function registerGMHUDSettings() {
     },
     default: 0,
     onChange: (value) => {
-      // Calculate scale: 0 = 110px, -25 = 82.5px, +25 = 137.5px
-      const baseSize = 110;
-      const scaleFactor = 1 + (value / 100);
-      const newSize = Math.round(baseSize * scaleFactor);
-      
-      document.documentElement.style.setProperty('--dgm-ring-scale', `${newSize}px`);
-      
-      if (getSetting(SETTINGS.debug)) {
-        console.log(`[GM HUD] Ring frame scale updated to ${value}% (${newSize}px)`);
-      }
+      updateRingFrameScale(value);
     }
   });
 
@@ -112,32 +118,7 @@ export function registerGMHUDSettings() {
     }
   });
 
-  function updateRingFrameScale(value) {
-    const baseSize = 110;
-    const scaleFactor = 1 + (value / 100);
-    const newSize = Math.round(baseSize * scaleFactor);
-    
-    document.documentElement.style.setProperty('--dgm-ring-scale', `${newSize}px`);
-    
-    if (getSetting(SETTINGS.debug)) {
-      console.log(`[GM HUD] Ring frame scale updated to ${value}% (${newSize}px)`);
-    }
-  }
-
-  // Initialize custom frame on startup
-// Move this function outside and before the ready hook
-function updateRingFrameScale(value) {
-  const baseSize = 110;
-  const scaleFactor = 1 + (value / 100);
-  const newSize = Math.round(baseSize * scaleFactor);
-  
-  document.documentElement.style.setProperty('--dgm-ring-scale', `${newSize}px`);
-  
-  if (getSetting(SETTINGS.debug)) {
-    console.log(`[GM HUD] Ring frame scale updated to ${value}% (${newSize}px)`);
-  }
-}
-
+  // Initialize settings on ready
   Hooks.once("ready", () => {
     // Initialize custom frame
     const customFrame = getSetting(SETTINGS.customFrame);
@@ -157,13 +138,17 @@ function updateRingFrameScale(value) {
     
     // Hook into the settings form to add live slider updates
     Hooks.on("renderSettingsConfig", (app, html) => {
-      const slider = html.find(`input[name="daggerheart-gm-hud.ringFrameScale"]`);
+      const slider = html.find(`input[name="${MODULE_ID}.${SETTINGS.ringFrameScale}"]`);
       if (slider.length) {
+        debugLog("Ring frame scale slider found, adding live updates");
+        
         // Add live input event listener
         slider.on('input', function() {
           const value = parseInt(this.value);
           updateRingFrameScale(value);
         });
+      } else {
+        debugLog("Ring frame scale slider not found");
       }
     });
   });
