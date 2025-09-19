@@ -244,12 +244,12 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         const bind = valueEl.dataset.bind;
         if (bind === "hp") {
           const max = Number(actor.system?.resources?.hitPoints?.max ?? 0);
-          await this._adjustResource(actor, "system.resources.hitPoints.value", +1, { min: 0, max });
+          await this._adjustResource(actor, "system.resources.hitPoints.value", -1, { min: 0, max });
           return;
         }
         if (bind === "stress") {
           const max = Number(actor.system?.resources?.stress?.max ?? 0);
-          await this._adjustResource(actor, "system.resources.stress.value", +1, { min: 0, max });
+          await this._adjustResource(actor, "system.resources.stress.value", -1, { min: 0, max });
           return;
         }
       }
@@ -267,12 +267,12 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         const bind = valueEl.dataset.bind;
         if (bind === "hp") {
           const max = Number(actor.system?.resources?.hitPoints?.max ?? 0);
-          await this._adjustResource(actor, "system.resources.hitPoints.value", -1, { min: 0, max });
+          await this._adjustResource(actor, "system.resources.hitPoints.value", +1, { min: 0, max });
           return;
         }
         if (bind === "stress") {
           const max = Number(actor.system?.resources?.stress?.max ?? 0);
-          await this._adjustResource(actor, "system.resources.stress.value", -1, { min: 0, max });
+          await this._adjustResource(actor, "system.resources.stress.value", +1, { min: 0, max });
           return;
         }
       }
