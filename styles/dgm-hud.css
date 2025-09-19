@@ -193,10 +193,11 @@
 }
 
 .dgm-portrait-img {
-  object-fit: cover;
-  object-position: center top;
-  transform: scale(1.5);
-  transform-origin: center top;
+  /* object-fit: cover; */
+  object-fit: contain;
+  object-position: center center;
+  /* transform: scale(1.5); */
+  transform-origin: center center;
   position: absolute;
   top: 0;
   left: 0;
