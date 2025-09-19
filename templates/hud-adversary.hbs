@@ -34,15 +34,21 @@
     </div>
 
     {{!-- Attack area (top-right) --}}
+    {{#if primaryAttack}}
     <div class="dgm-attack dgm-roll"
-         role="button"
-         tabindex="0"
-         data-action="roll-attack"
-         data-attack-id="{{primaryAttack.id}}"
-         title="{{primaryAttack.name}} (+{{primaryAttack.bonus}}, {{primaryAttack.range}}, {{primaryAttack.damage}}, {{primaryAttack.damageType}})">
+        role="button"
+        tabindex="0"
+        data-action="roll-attack"
+        data-attack-id="{{primaryAttack.id}}"
+        title="{{primaryAttack.name}} ({{signed primaryAttack.bonus}}, {{primaryAttack.range}}, {{formatDamage primaryAttack.damage}}, {{extractDamageTypes primaryAttack.damage}})">
       <img class="dgm-attack-icon" src="{{primaryAttack.img}}" alt="{{primaryAttack.name}}">
-      <div class="dgm-attack-bonus">+{{primaryAttack.bonus}}</div>
+      <div class="dgm-attack-bonus">{{signed primaryAttack.bonus}}</div>
     </div>
+    {{else}}
+    <div class="dgm-attack" title="No attack available">
+      <img class="dgm-attack-icon" src="icons/svg/sword.svg" alt="No attack">
+    </div>
+    {{/if}}
 
     {{!-- Features Toggle (bottom-right) --}}
     <div class="dgm-features-toggle dgm-tab"

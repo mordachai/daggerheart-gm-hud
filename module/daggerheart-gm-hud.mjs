@@ -2,6 +2,8 @@
 
 import { registerGMHUDSettings, getSetting, SETTINGS, debugLog, getCurrentTheme, applyThemeToElement } from "./settings.mjs";
 import { DaggerheartGMHUD } from "./apps/dgm-adversary-hud.mjs";
+import { registerDHUDHelpers } from "./helpers/handlebars-helpers.mjs";
+
 
 const MODULE_ID = "daggerheart-gm-hud";
 
@@ -84,6 +86,8 @@ Hooks.once("init", () => {
   
   // Register settings
   registerGMHUDSettings();
+  registerDHUDHelpers();
+
   
   debugLog("GM HUD module initialized");
 });

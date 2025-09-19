@@ -321,7 +321,6 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     
     debugLog("Preparing context for actor:", actor?.name);
 
-    // Fallbacks for missing actor
     if (!actor) {
       return {
         adversaryName: "No Actor",
@@ -343,20 +342,17 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     // Basic info
     const adversaryName = actor.name ?? "Unnamed Adversary";
     
-    // Use token image if available, fallback to actor image
+    // Portrait priority: token -> actor -> prototype -> default
     let portrait = "icons/svg/mystery-man.svg";
-    if (this.token?.texture?.src) {
-      portrait = this.token.texture.src;
-    } else if (actor.img && actor.img.trim()) {
-      portrait = actor.img;
-    } else if (actor.prototypeToken?.texture?.src) {
-      portrait = actor.prototypeToken.texture.src;
-    }
+    if (this.token?.texture?.src) portrait = this.token.texture.src;
+    else if (actor.img?.trim()) portrait = actor.img;
+    else if (actor.prototypeToken?.texture?.src) portrait = actor.prototypeToken.texture.src;
+
     const tier = Number(sys.tier ?? 1);
     const systemType = String(sys.type ?? "").toLowerCase();
     const difficulty = Number(sys.difficulty ?? 10);
 
-    // Resources (note: adversaries use isReversed: true)
+    // Resources
     const hp = {
       value: Number(sys.resources?.hitPoints?.value ?? 0),
       max: Number(sys.resources?.hitPoints?.max ?? 0)
@@ -367,37 +363,30 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       max: Number(sys.resources?.stress?.max ?? 0)
     };
 
-    // Primary attack
+    // Primary attack - simplified
     let primaryAttack = null;
     if (sys.attack) {
-      const att = sys.attack;
       primaryAttack = {
-        id: att._id || "primary",
-        name: att.name || "Attack",
-        img: att.img || "icons/svg/sword.svg",
-        bonus: Number(att.roll?.bonus ?? 0),
-        range: att.range || "close",
-        damage: this._formatDamage(att.damage),
-        damageType: this._extractDamageTypes(att.damage)
+        id: sys.attack._id || "primary",
+        name: sys.attack.name || "Attack",
+        img: sys.attack.img || "icons/svg/sword.svg",
+        bonus: Number(sys.attack.roll?.bonus ?? 0),
+        range: sys.attack.range || "close",
+        damage: sys.attack.damage // Let template helpers handle formatting
       };
     }
 
-    // Description and Motives & Tactics
+    // Text content
     const motivesAndTactics = sys.motivesAndTactics || "";
     const description = sys.description || "";
 
     // Experiences
-    const experiences = [];
-    if (sys.experiences) {
-      for (const [id, exp] of Object.entries(sys.experiences)) {
-        experiences.push({
-          id: id,
-          name: exp.name || "Unnamed Experience",
-          value: Number(exp.value ?? 0),
-          description: exp.description || ""
-        });
-      }
-    }
+    const experiences = Object.entries(sys.experiences || {}).map(([id, exp]) => ({
+      id,
+      name: exp.name || "Unnamed Experience",
+      value: Number(exp.value ?? 0),
+      description: exp.description || ""
+    }));
 
     // Damage Thresholds
     const thresholds = {
@@ -405,31 +394,14 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       severe: Number(sys.damageThresholds?.severe ?? 0)
     };
 
-    // Features
-    const features = [];
-    for (const item of (actor.items ?? [])) {
-      if (item.type !== "feature") continue;
-
-      const hasActions = featureHasActions(item);
-      
-      features.push({
-        id: item.id,
-        name: item.name || "Unnamed Feature",
-        img: item.img || "icons/svg/aura.svg",
-        description: item.system?.description || "",
-        hasActions: hasActions,
-        resourceInfo: this._getFeatureResourceInfo(item),
-        actionPath: this._getFeatureActionPath(item)
-      });
-    }
-
-    debugLog("Context prepared:", {
-      adversaryName,
-      tier,
-      systemType,
-      difficulty,
-      featuresCount: features.length
-    });
+    // Features - pass raw items to template, let helpers handle logic
+    const features = actor.items.filter(item => item.type === "feature").map(item => ({
+      id: item.id,
+      name: item.name || "Unnamed Feature",
+      img: item.img || "icons/svg/aura.svg",
+      description: item.system?.description || "",
+      system: item.system // Pass full system data for helpers
+    }));
 
     return {
       adversaryName,
@@ -446,46 +418,6 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       thresholds,
       features
     };
-  }
-
-  _formatDamage(damageData) {
-    if (!damageData?.parts?.length) return "—";
-    
-    const part = damageData.parts[0];
-    const value = part.value;
-    if (!value) return "—";
-    
-    const dice = value.dice || "d6";
-    const multiplier = value.flatMultiplier || 1;
-    const bonus = value.bonus || 0;
-    
-    let formula = multiplier > 1 ? `${multiplier}${dice}` : dice;
-    if (bonus > 0) formula += `+${bonus}`;
-    else if (bonus < 0) formula += `${bonus}`;
-    
-    return formula;
-  }
-
-  _extractDamageTypes(damageData) {
-    if (!damageData?.parts?.length) return "";
-    
-    const types = damageData.parts[0].type || [];
-    return Array.isArray(types) ? types.join(", ") : String(types);
-  }
-
-  _getFeatureResourceInfo(item) {
-    const name = item.name || "";
-    
-    // Look for resource indicators in name like "Relentless (3)"
-    const match = name.match(/\((\d+)\)$/);
-    if (match) {
-      return {
-        current: Number(match[1]),
-        isLimited: true
-      };
-    }
-    
-    return null;
   }
 
   _getFeatureActionPath(item) {
@@ -524,14 +456,16 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
 
     try {
       const savedPos = await game.user.getFlag("daggerheart-gm-hud", "hudPosition");
-      if (savedPos) {
-        root.style.position = "absolute";
-        root.style.left = `${Math.max(0, savedPos.left)}px`;
-        root.style.top = `${Math.max(0, savedPos.top)}px`;
+      if (savedPos && savedPos.left !== undefined && savedPos.top !== undefined) {
+        root.style.position = "fixed"; // Use fixed instead of absolute
+        root.style.left = `${Math.max(0, Math.min(savedPos.left, window.innerWidth - 200))}px`;
+        root.style.top = `${Math.max(0, Math.min(savedPos.top, window.innerHeight - 200))}px`;
+        root.style.bottom = "auto";
+        root.style.transform = "none";
         debugLog("Restored HUD position:", savedPos);
       } else {
         // Default positioning (center-bottom)
-        root.style.position = "absolute";
+        root.style.position = "fixed";
         root.style.bottom = "100px";
         root.style.left = "50%";
         root.style.transform = "translateX(-50%)";
@@ -554,8 +488,11 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
       
-      root.style.left = `${startLeft + dx}px`;
-      root.style.top = `${startTop + dy}px`;
+      const newLeft = Math.max(0, Math.min(startLeft + dx, window.innerWidth - 200));
+      const newTop = Math.max(0, Math.min(startTop + dy, window.innerHeight - 200));
+      
+      root.style.left = `${newLeft}px`;
+      root.style.top = `${newTop}px`;
       root.style.bottom = "auto";
       root.style.transform = "none";
     };
@@ -572,8 +509,8 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       try {
         const rect = root.getBoundingClientRect();
         const pos = {
-          left: Math.max(0, Math.round(rect.left)),
-          top: Math.max(0, Math.round(rect.top))
+          left: Math.round(rect.left),
+          top: Math.round(rect.top)
         };
         await game.user.setFlag("daggerheart-gm-hud", "hudPosition", pos);
         debugLog("Saved HUD position:", pos);
@@ -586,7 +523,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       if (ev.button !== 0) return;
       
       // Don't drag if clicking on interactive elements
-      if (ev.target.closest(".dgm-roll, .dgm-count .value")) return;
+      if (ev.target.closest(".dgm-roll, .dgm-count .value, .dgm-features-toggle")) return;
       
       ev.preventDefault();
       isDragging = true;
