@@ -3,8 +3,11 @@ export async function enrichItemDescription(item) {
   const raw = item.system?.description ?? "";
   const rollData = item.getRollData?.() ?? item.actor?.getRollData?.() ?? {};
 
+  // Use the new Foundry v13 namespaced TextEditor
+  const TextEditorImpl = foundry.applications.ux.TextEditor.implementation;
+  
   // Foundry will parse [[/r ...]] and resolve @UUID, etc.
-  const html = await TextEditor.enrichHTML(raw, {
+  const html = await TextEditorImpl.enrichHTML(raw, {
     async: true,
     rollData,
     relativeTo: item,

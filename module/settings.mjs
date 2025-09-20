@@ -138,7 +138,10 @@ export function registerGMHUDSettings() {
     
     // Hook into the settings form to add live slider updates
     Hooks.on("renderSettingsConfig", (app, html) => {
-      const slider = html.find(`input[name="${MODULE_ID}.${SETTINGS.ringFrameScale}"]`);
+      // Convert html to jQuery object if it isn't already (Foundry v13 compatibility)
+      const $html = html instanceof jQuery ? html : $(html);
+      
+      const slider = $html.find(`input[name="${MODULE_ID}.${SETTINGS.ringFrameScale}"]`);
       if (slider.length) {
         debugLog("Ring frame scale slider found, adding live updates");
         
@@ -151,6 +154,7 @@ export function registerGMHUDSettings() {
         debugLog("Ring frame scale slider not found");
       }
     });
+    
   });
 }
 

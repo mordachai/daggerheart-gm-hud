@@ -5,6 +5,7 @@
 /* Default Theme */
 :where(.daggerheart-gm-hud).dgm-theme-default {
   --dgm-bg: #15131b;
+  --dgm-bg-app: #18162ed6;
   --dgm-surface: #1f1b2a;
   --dgm-panel: #2b2536;
   --dgm-border: #3b3248;
@@ -17,6 +18,7 @@
 /* Shadowveil Theme */
 :where(.daggerheart-gm-hud).dgm-theme-shadowveil {
   --dgm-bg: #0d0a15;
+  --dgm-bg-app: #1a1525d6;
   --dgm-surface: #1a1525;
   --dgm-panel: #252035;
   --dgm-border: #3a2f4a;
@@ -29,6 +31,7 @@
 /* Ironclad Theme */
 :where(.daggerheart-gm-hud).dgm-theme-ironclad {
   --dgm-bg: #0a0f1a;
+  --dgm-bg-app: #151a25d6;
   --dgm-surface: #151a25;
   --dgm-panel: #20252f;
   --dgm-border: #2f3a45;
@@ -41,6 +44,7 @@
 /* Wildfire Theme */
 :where(.daggerheart-gm-hud).dgm-theme-wildfire {
   --dgm-bg: #1a100a;
+  --dgm-bg-app: #251a15d6;
   --dgm-surface: #251a15;
   --dgm-panel: #2f2520;
   --dgm-border: #453a2f;
@@ -53,6 +57,7 @@
 /* Frostbite Theme */
 :where(.daggerheart-gm-hud).dgm-theme-frostbite {
   --dgm-bg: #0a1515;
+  --dgm-bg-app: #152020d6;
   --dgm-surface: #152020;
   --dgm-panel: #202a2a;
   --dgm-border: #2f3f3f;

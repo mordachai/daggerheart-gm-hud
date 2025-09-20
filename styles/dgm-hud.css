@@ -1,6 +1,7 @@
 /* ===== GM HUD THEME VARIABLES ===== */
 :root {
   --dgm-bg: #15131b;
+  --dgm-bg-app: #18162e60;
   --dgm-surface: #1f1b2a;
   --dgm-panel: #2b2536;
   --dgm-border: #3b3248;
@@ -20,6 +21,8 @@
   box-shadow: none !important;
   background: transparent !important;
   overflow: visible !important;
+  backdrop-filter: blur(4px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.2); /* Safari support */
 }
 .daggerheart-gm-hud .window-header { display: none !important; }
 .daggerheart-gm-hud .window-content {
@@ -426,7 +429,6 @@
   bottom: calc(100% + var(--dgm-panel-gap, 8px));
   width: 320px;
   max-height: var(--dgm-panel-maxh, 70vh);
-  background: var(--dgm-panel);
   border: 2px solid var(--dgm-border);
   border-radius: 12px;
   padding: 12px;
@@ -434,7 +436,11 @@
   display: none;
   overflow-y: auto;
   z-index: 100;
+  background: var(--dgm-bg-app);
+  opacity: 1;
+  backdrop-filter: blur(5px) !important;
 }
+
 
 .dgm-panel[data-open-dir="down"] {
   /* Open BELOW the HUD, completely outside */
