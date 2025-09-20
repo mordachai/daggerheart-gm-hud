@@ -2,8 +2,6 @@
 
 ![Static Badge](https://img.shields.io/badge/Foundry_VTT-13-red?style=for-the-badge) ![Github All Releases](https://img.shields.io/github/downloads/mordachai/daggerheart-gm-hud/total.svg?style=for-the-badge) ![GitHub Release](https://img.shields.io/github/v/release/mordachai/daggerheart-gm-hud?display_name=tag&style=for-the-badge&label=Current%20version)
 
-### NOTE: Localization is on the way, only English for now.
-
 # Daggerheart GM HUD
 
 A streamlined HUD for Game Masters running Daggerheart sessions, providing quick access to adversary information and actions without cluttering the interface.
