@@ -13,25 +13,25 @@
              role="button"
              tabindex="0"
              data-action="roll-reaction"
-             title="Reaction Roll">
+             title="{{l 'DAGGERHEART.GENERAL.reactionRoll'}}">
           <i class="fa-solid fa-reply"></i>
           {{!-- <span class="dgm-button-label">Reaction</span> --}}
         </div>
 
         {{!-- HP Counter --}}
-        <div class="dgm-count dgm-count--hp" title="Hit Points">
+        <div class="dgm-count dgm-count--hp" title="{{l 'DAGGERHEART.GENERAL.HitPoints.plural'}}">
           <div class="label"><i class="fa-solid fa-heart"></i></div>
           <div class="value" data-bind="hp">{{hp.value}}/{{hp.max}}</div>
         </div>
 
         {{!-- Stress Counter --}}
-        <div class="dgm-count dgm-count--stress" title="Stress">
+        <div class="dgm-count dgm-count--stress" title="{{l 'DAGGERHEART.GENERAL.stress'}}">
           <div class="label"><i class="fa-solid fa-bolt"></i></div>
           <div class="value" data-bind="stress">{{stress.value}}/{{stress.max}}</div>
         </div>
 
         {{!-- Difficulty Counter --}}
-        <div class="dgm-count dgm-count--difficulty" title="Difficulty">
+        <div class="dgm-count dgm-count--difficulty" title="{{l 'DAGGERHEART.GENERAL.difficulty'}}">
           <div class="label"><i class="fa-solid fa-shield"></i></div>
           <div class="info" title="Difficulty">{{difficulty}}</div>
         </div>
@@ -47,8 +47,8 @@
              data-action="toggle-features"
              aria-controls="dgm-features-panel"
              aria-expanded="false"
-             title="Toggle Features">
-          <span class="dgm-features-icon">Features</span>
+             title="{{l 'DAGGERHEART.GENERAL.features'}}">
+          <span class="dgm-features-icon">{{l 'DAGGERHEART.GENERAL.features'}}</span>
         </div>
 
         {{!-- Portrait below --}}
@@ -70,14 +70,14 @@
             title="{{primaryAttack.name}} ({{signed primaryAttack.bonus}})">
           <img class="dgm-attack-icon" src="{{primaryAttack.img}}" alt="{{primaryAttack.name}}">
           <div class="dgm-attack-info">
-            <div class="dgm-count dgm-count--attack-bonus">
+            <div class="dgm-count dgm-count--attack-bonus" title="{{l 'DAGGERHEART.ACTIONS.Settings.attackBonus'}}">
               <div class="dgm-attack-bonus"><i class="fa-solid fa-swords"></i></div>
               <div class="dgm-attack-bonus">{{signed primaryAttack.bonus}}</div>
             </div>
-            <div class="dgm-attack-details">
+            <div class="dgm-attack-details" title="{{l 'DAGGERHEART.GENERAL.range'}}">
               {{primaryAttack.range}}
             </div>
-            <div class="dgm-attack-damage">
+            <div class="dgm-attack-damage" title="{{primaryAttack.damageTypeName}} {{l 'DAGGERHEART.GENERAL.damage'}}">
               {{formatDamage primaryAttack.damage}}
               {{#if primaryAttack.damageTypeIcon}}
               <i class="{{primaryAttack.damageTypeIcon}}"></i>
@@ -89,7 +89,7 @@
         <div class="dgm-attack" title="No attack available">
           <img class="dgm-attack-icon" src="icons/svg/sword.svg" alt="No attack">
           <div class="dgm-attack-info">
-            <div class="dgm-attack-name">No Attack</div>
+            <div class="dgm-attack-name">{{l 'DAGGERHEART.UI.Notifications.attackIsMissing'}}</div>
           </div>
         </div>
         {{/if}}
@@ -124,8 +124,8 @@
             <header class="dgm-panel-header">
               <div class="dgm-adversary-name">{{adversaryName}}</div>
               <div class="dgm-pills-container">
-              {{#if tier}}<span class="dgm-adversary-pills">Tier {{tier}}</span>{{/if}}
-              {{#if systemType}}<span class="dgm-adversary-pills">{{systemType}}</span>{{/if}}
+              {{#if tier}}<span class="dgm-adversary-pills">{{l 'DAGGERHEART.GENERAL.Tiers.singular'}} {{tier}}</span>{{/if}}
+              {{#if systemType.label}}<span class="dgm-adversary-pills" title="{{systemType.description}}">{{systemType.label}}</span>{{/if}}
               </div>
             </header>
           </summary>
@@ -142,10 +142,10 @@
           {{/if}}
           {{#if experiences}}
           <div class="dgm-section-content">
-            <span class="dgm-section-center-title">Experiences</span>
+            <span class="dgm-section-center-title">{{l 'DAGGERHEART.GENERAL.Experience.plural'}}</span>
             {{#each experiences}}
               <div class="dgm-experience">
-                {{name}}: +{{value}} {{description}} {{#if bonus}}({{signed bonus}}){{/if}}
+                {{name}}: +{{value}} {{#if description}}<span> >> </span> {{description}}{{/if}} {{#if bonus}}({{signed bonus}}){{/if}}
               </div>
             {{/each}}
           </div>
@@ -188,7 +188,7 @@
                    tabindex="0"
                    data-action="feature-to-chat"
                    data-feature-id="{{id}}"
-                   title="Send to Chat"></i>
+                   title="{{l 'DAGGERHEART.UI.Tooltip.sendToChat'}}"></i>
               </summary>
 
               {{!-- Feature Description (expanded content) --}}
@@ -198,7 +198,7 @@
             </details>
           </li>
           {{else}}
-          <li class="dgm-acc-item dgm-empty">{{l "DAGGERHEART.GENERAL.NoFeatures" "No features available"}}</li>
+          <li class="dgm-acc-item dgm-empty">{{l "DAGGERHEART.UI.Notifications.featureIsMissing"}}</li>
           {{/each}}
         </ul>
       </div>

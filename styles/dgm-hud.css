@@ -11,7 +11,7 @@
   --dgm-accent-ink: #2b220a;
   --dgm-ring-frame: url("../assets/ui/dgm-hud-frame.webp");
   --dgm-ring-overlap: 2px;
-  --dgm-ring-scale: 84px;
+  --dgm-ring-scale: 100px;
 }
 
 /* ===== REMOVE APPLICATION V2 WINDOW CHROME ===== */
@@ -21,13 +21,12 @@
   box-shadow: none !important;
   background: transparent !important;
   overflow: visible !important;
-  backdrop-filter: blur(4px) saturate(1.2) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(1.2); /* Safari support */
+  backdrop-filter: blur(2px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(2px) saturate(1.2); /* Safari support */
 }
 .daggerheart-gm-hud .window-header { display: none !important; }
 .daggerheart-gm-hud .window-content {
   background: transparent !important;
-  padding: 10px !important;
   overflow: visible !important;
   backdrop-filter: blur(2px);
 }
@@ -176,19 +175,19 @@
 
 /* ===== CORE SECTION ===== */
 .dgm-section--core {
-  gap: 6px;
+  gap: 10px;
   min-width: 100px;
 }
 
 .dgm-portrait-wrapper {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 95px;
+  height: 95px;
 }
 
 .dgm-portrait {
-  width: 80px;
-  height: 80px;
+  width: 95px;
+  height: 95px;
   border-radius: 50%;
   overflow: hidden;
   position: relative;
@@ -212,8 +211,8 @@
   border: none;
   z-index: 2;
   display: block;
-  width: 80px !important;
-  height: 80px !important;
+  width: 100px !important;
+  height: 100px !important;
   border-radius: 50%;
 }
 
@@ -235,8 +234,9 @@
 }
 
 .dgm-features-toggle {
-  width: 70px;
-  height: 28px;
+  width: auto;
+  padding: 7px 8px;
+  font-family: 'Verdana', sans-serif;
   border-radius: 14px;
   border: 2px solid var(--dgm-border);
   background: var(--dgm-surface);
@@ -247,7 +247,8 @@
   transition: all 0.2s ease;
   font-weight: 600;
   color: var(--dgm-accent);
-  font-size: 10px;
+  font-size: 9px;
+  text-transform: uppercase;
 }
 
 .dgm-features-toggle:hover,
@@ -255,11 +256,13 @@
   border-color: var(--dgm-accent);
   background: var(--dgm-accent);
   color: var(--dgm-accent-ink);
+  font-weight: 800;
 }
 
 .dgm-features-toggle[aria-expanded="true"] {
   background: var(--dgm-accent);
   color: var(--dgm-accent-ink);
+  font-weight: 800;
 }
 
 /* ===== ATTACK SECTION ===== */
@@ -348,7 +351,7 @@
 .dgm-threshold-chip {
   background: var(--dgm-surface);
   color: var(--dgm-accent);
-  padding: 0.14rem 0.6rem;
+  padding: 0.16rem 0.65rem;
   border-radius: 8px;
   font-weight: 900;
   letter-spacing: 0.04em;
@@ -440,7 +443,6 @@
   opacity: 1;
   backdrop-filter: blur(5px) !important;
 }
-
 
 .dgm-panel[data-open-dir="down"] {
   /* Open BELOW the HUD, completely outside */
@@ -594,10 +596,11 @@
   gap: var(--gap);
 
   color: var(--dgm-accent);
-  font-size: 20px;
+  font-size: 18px;
   padding: 5px 5px;
   width: 100%;
   font-family: 'Cinzel', serif;
+  font-weight: 700;
 
   /* prevent any tiny overflows that cause an x-scrollbar */
   overflow: hidden;

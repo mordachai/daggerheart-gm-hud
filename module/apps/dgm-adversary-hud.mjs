@@ -391,8 +391,13 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     else if (actor.prototypeToken?.texture?.src) portrait = actor.prototypeToken.texture.src;
 
     const tier = Number(sys.tier ?? 1);
-    const systemType = String(sys.type ?? "").toLowerCase();
     const difficulty = Number(sys.difficulty ?? 10);
+    const systemTypeRaw = String(sys.type ?? "").toLowerCase();
+    const systemType = {
+      raw: systemTypeRaw,
+      label: systemTypeRaw ? game.i18n.localize(`DAGGERHEART.CONFIG.AdversaryType.${systemTypeRaw}.label`) : "",
+      description: systemTypeRaw ? game.i18n.localize(`DAGGERHEART.CONFIG.AdversaryType.${systemTypeRaw}.description`) : ""
+    };
 
     // Resources
     const hp = {
@@ -441,7 +446,9 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         range: sys.attack.range || "close",
         damage: sys.attack.damage,
         damageType: damageType,
-        damageTypeIcon: damageTypeIcon
+        damageTypeIcon: damageTypeIcon,
+        damageTypeName: damageType ? game.i18n.localize(`DAGGERHEART.CONFIG.DamageType.${damageType.toLowerCase()}.name`) : ""
+
       };
     }
 

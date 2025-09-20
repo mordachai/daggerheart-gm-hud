@@ -20,7 +20,7 @@ export async function setSetting(key, value) {
 // Move this function outside and make it available
 function updateRingFrameScale(value) {
   // Match the CSS default of 84px for the new layout
-  const baseSize = 84;
+  const baseSize = 100;
   const scaleFactor = 1 + (value / 100);
   const newSize = Math.round(baseSize * scaleFactor);
   
@@ -93,8 +93,8 @@ export function registerGMHUDSettings() {
     config: true,
     type: Number,
     range: {
-      min: -25,
-      max: 25,
+      min: -30,
+      max: 30,
       step: 1
     },
     default: 0,

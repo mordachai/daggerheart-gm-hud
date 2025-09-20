@@ -13,6 +13,7 @@
   --dgm-muted: #c9c3d7;
   --dgm-accent: #f2c24b;
   --dgm-accent-ink: #2b220a;
+  --dgm-ring-frame: url("../assets/ui/dgm-default-frame.webp");
 }
 
 /* Shadowveil Theme */
@@ -26,6 +27,7 @@
   --dgm-muted: #c0a0ff;
   --dgm-accent: #6c5ce7;
   --dgm-accent-ink: #1a1425;
+  --dgm-ring-frame: url("../assets/ui/dgm-shadowveil-frame.webp");
 }
 
 /* Ironclad Theme */
@@ -39,6 +41,7 @@
   --dgm-muted: #a0c8ff;
   --dgm-accent: #74b9ff;
   --dgm-accent-ink: #0a1520;
+  --dgm-ring-frame: url("../assets/ui/dgm-ironclad-frame.webp");
 }
 
 /* Wildfire Theme */
@@ -52,6 +55,7 @@
   --dgm-muted: #ffb48c;
   --dgm-accent: #e17055;
   --dgm-accent-ink: #201510;
+  --dgm-ring-frame: url("../assets/ui/dgm-wildfire-frame.webp");
 }
 
 /* Frostbite Theme */
@@ -65,4 +69,5 @@
   --dgm-muted: #a0fffa;
   --dgm-accent: #00cec9;
   --dgm-accent-ink: #0a1515;
+  --dgm-ring-frame: url("../assets/ui/dgm-frostbite-frame.webp");
 }
