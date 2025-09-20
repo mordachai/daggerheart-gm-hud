@@ -139,18 +139,44 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
   }
 
   async _rollReaction() {
-    const actor = this.actor;
-    if (!actor) return;
+      const actor = this.actor;
+      if (!actor) return;
 
-    debugLog("Rolling reaction for:", actor.name);
+      debugLog("Rolling reaction for:", actor.name);
 
-    try {
-      // Use the system's duality roll command
-      ui.chat?.processMessage?.(`/dr reaction=true`);
-    } catch (err) {
-      console.error("[GM HUD] Reaction roll failed", err);
-      ui.notifications?.error("Reaction roll failed (see console)");
-    }
+      try {
+          // Find the actor's sheet
+          const sheet = actor.sheet;
+          if (sheet && sheet.rendered) {
+              // Try to trigger the same method the button uses
+              const fakeEvent = new Event('click');
+              await sheet.constructor.reactionRoll.call(sheet, fakeEvent);
+          } else {
+              // Fallback to direct method call with event simulation
+              const fakeEvent = { 
+                  preventDefault: () => {},
+                  stopPropagation: () => {},
+                  target: { dataset: {} }
+              };
+              
+              const config = {
+                  event: fakeEvent, // Adding the event parameter
+                  title: `Reaction Roll: ${actor.name}`,
+                  headerTitle: 'Adversary Reaction Roll',
+                  roll: {
+                      type: 'reaction'
+                  },
+                  type: 'trait',
+                  hasRoll: true,
+                  data: actor.getRollData()
+              };
+
+              await actor.diceRoll(config);
+          }
+      } catch (err) {
+          console.error("[GM HUD] Reaction roll failed", err);
+          ui.notifications?.error("Reaction roll failed (see console)");
+      }
   }
 
   _bindDelegatedEvents() {
