@@ -51,8 +51,6 @@ A streamlined HUD for Game Masters running Daggerheart sessions, providing quick
 
 ## Settings
 
-<img width="801" height="706" alt="image" src="https://github.com/user-attachments/assets/18b18180-288e-4832-9cf3-2cfaade97f99" />
-
 ### Theme Options:
 Choose from multiple color schemes:
 - Default (Golden)
@@ -61,20 +59,22 @@ Choose from multiple color schemes:
 - Wildfire (Orange)
 - Frostbite (Cyan)
 
-<img width="433" height="317" alt="image" src="https://github.com/user-attachments/assets/197bb62e-dffe-4241-92a0-3f197cd61bd6" /> <img width="358" height="221" alt="image" src="https://github.com/user-attachments/assets/0cfd4c17-dcd6-438a-8fbb-594843dba247" />
-
- <img width="372" height="245" alt="image" src="https://github.com/user-attachments/assets/1311f598-7944-4eda-baf4-cf81c0bd31ec" /> <img width="434" height="278" alt="image" src="https://github.com/user-attachments/assets/b8565363-ad37-4846-978c-71f7c43d40db" />
+<img width="838" height="570" alt="image" src="https://github.com/user-attachments/assets/f7f5c9a2-49d0-428a-9330-c40391c92c54" />
 
 ### Ring Frame Customization:
 - **Custom Ring Frame**: Upload your own portrait frame image
 - **Ring Frame Scale**: Adjust the size of the frame overlay (-25% to +25%)
+- **Disable Ring Frames**: don't load any ring, useful if you already use rings on the tokens (i.e., Tokenizer module)
 
-### Other Options:
-- **Debug Mode**: Enable console logging for troubleshooting
+<img width="794" height="696" alt="image" src="https://github.com/user-attachments/assets/55af0288-a3c4-4b9a-a771-e768bc8e68f1" />
 
 ## Installation
 
-Use the link below for a manual installation (Foundry page on the way):
+Go to Add-on Modules and search for _daggerheart gm hud_ **<< awaiting Foundry's approval, use manual method below for now**
+
+OR
+
+Use the link below for a manual installation:
 
 **Manifest URL:**
 ```
