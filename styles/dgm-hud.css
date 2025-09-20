@@ -271,6 +271,13 @@
 }
 
 /* ===== ATTACK SECTION ===== */
+
+.dgm-attack-container{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .dgm-section--attack {
   gap: 6px;
   min-width: 70px;
@@ -323,6 +330,12 @@
   font-size: 16px;
   font-weight: 400;
   text-transform: uppercase;
+  white-space: nowrap;
+  filter: drop-shadow(0 0 1px var(--dgm-surface));
+}
+
+.dgm-attack-details i {
+  color: var(--dgm-accent);
   filter: drop-shadow(0 0 1px var(--dgm-surface));
 }
 

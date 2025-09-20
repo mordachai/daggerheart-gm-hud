@@ -138,6 +138,114 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     }
   }
 
+  async _rollDamage() {
+    const actor = this.actor;
+    if (!actor) return;
+
+    const attackData = actor.system?.attack;
+    if (!attackData?.damage) {
+      ui.notifications?.warn("No damage configured for this attack");
+      return;
+    }
+
+    debugLog("Opening damage dialog for:", attackData.name);
+
+    try {
+      // Use the Daggerheart system's DamageDialog
+      const DamageDialog = CONFIG.DAGGERHEART.dialogs.DamageDialog;
+      
+      if (DamageDialog) {
+        // Create and render the damage dialog
+        const dialog = new DamageDialog({
+          damage: attackData.damage,
+          actor: actor,
+          title: `${attackData.name} - Damage Roll`
+        });
+        
+        await dialog.render(true);
+      } else {
+        // Fallback if dialog not available
+        ui.notifications?.warn("Damage dialog not available");
+      }
+      
+    } catch (err) {
+      console.error("[GM HUD] Damage dialog failed", err);
+      ui.notifications?.error("Damage dialog failed (see console)");
+    }
+  }
+
+  async _createRangeTemplate(range) {
+    if (!canvas?.ready || !canvas.scene) return;
+
+    const squaresByRange = {
+      melee: 1,       // skipped
+      veryclose: 3,
+      close: 6,
+      far: 12,
+      veryfar: 13     // skipped
+    };
+
+    const r = String(range ?? "").toLowerCase().trim();
+    const squares = squaresByRange[r];
+    if (!squares || r === "melee" || r === "veryfar") return;
+
+    // choose a source token (this.token preferred; else first controlled)
+    const tok = this.token ?? canvas.tokens.controlled[0];
+    if (!tok) return;
+
+    // scene grid metadata
+    const unitsPerSquare = canvas.scene.grid.distance ?? 5;   // e.g., 5 ft per square
+    const distanceUnits  = squares * unitsPerSquare;          // convert squares -> scene units
+
+    // center position in scene pixels
+    const center = tok.center ?? {
+      x: (tok.document?.x ?? tok.x) + ((tok.document?.width ?? tok.w ?? 1) * canvas.grid.size) / 2,
+      y: (tok.document?.y ?? tok.y) + ((tok.document?.height ?? tok.h ?? 1) * canvas.grid.size) / 2
+    };
+
+    const data = {
+      t: "circle",
+      x: center.x,
+      y: center.y,
+      distance: distanceUnits,           // <-- scene distance units
+      direction: 0,
+      angle: 0,
+      width: 0,
+      elevation: tok.document?.elevation ?? tok.elevation ?? 0,
+      borderColor: "#FF6B35",
+      fillColor: game.user.color,        // keep solid 6-digit hex
+      texture: "",
+      hidden: false,
+      flags: {
+        "daggerheart-gm-hud": {
+          range,
+          squares,
+          unitsPerSquare,
+          distanceUnits,
+          actorId: this.actor?.id,
+          tokenId: tok.id ?? tok.document?.id,
+          createdAt: Date.now()
+        }
+      },
+      author: game.user.id               // v13 field name
+    };
+
+    const [doc] = await canvas.scene.createEmbeddedDocuments("MeasuredTemplate", [data]);
+    return canvas.templates.get(doc?.id ?? "");
+  }
+
+  _buildDamageFormula(damageValue) {
+    const dice = damageValue.dice || "d6";
+    const multiplier = damageValue.flatMultiplier || 1;
+    const bonus = damageValue.bonus || 0;
+    
+    let formula = multiplier > 1 ? `${multiplier}${dice}` : dice;
+    if (bonus > 0) formula += `+${bonus}`;
+    else if (bonus < 0) formula += `${bonus}`;
+    
+    return formula;
+  }
+
   async _rollReaction() {
       const actor = this.actor;
       if (!actor) return;
@@ -220,6 +328,14 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         return;
       }
 
+      // Damage roll
+      const damageBtn = ev.target.closest("[data-action='roll-damage']");
+      if (damageBtn) {
+        stop(ev);
+        await this._rollDamage();
+        return;
+      }
+
       // Reaction roll
       const reactionBtn = ev.target.closest("[data-action='roll-reaction']");
       if (reactionBtn) {
@@ -235,6 +351,15 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         const item = actor.items.get(featureExec.dataset.featureId);
         const actionPath = featureExec.dataset.actionPath || "use";
         if (item) await this._executeFeature(item, actionPath);
+        return;
+      }
+
+      // Range template creation
+      const rangeDetails = ev.target.closest("[data-action='create-range-template']");
+      if (rangeDetails) {
+        stop(ev);
+        const range = rangeDetails.dataset.range || rangeDetails.textContent?.trim();
+        if (range) await this._createRangeTemplate(range);
         return;
       }
 
