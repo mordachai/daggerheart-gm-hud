@@ -6,6 +6,7 @@ export const SETTINGS = {
   theme: "theme",
   customFrame: "customFrame", 
   ringFrameScale: "ringFrameScale",
+  disableRingFrames: "disableRingFrames",
   debug: "debug"
 };
 
@@ -28,6 +29,30 @@ function updateRingFrameScale(value) {
   
   if (getSetting(SETTINGS.debug)) {
     console.log(`[GM HUD] Ring frame scale updated to ${value}% (${newSize}px)`);
+  }
+}
+
+function updateRingFrameVisibility() {
+  const disabled = getSetting("disableRingFrames");
+  
+  if (disabled) {
+    // Hide all ring frames by adding a CSS class
+    document.documentElement.classList.add('dgm-disable-rings');
+  } else {
+    // Remove the disable class
+    document.documentElement.classList.remove('dgm-disable-rings');
+    
+    // Handle custom frames normally
+    const customFrame = getSetting(SETTINGS.customFrame);
+    if (customFrame && customFrame.trim()) {
+      // Use custom frame
+      const imagePath = customFrame.startsWith('/') ? customFrame : `/${customFrame}`;
+      const frameUrl = `url("${imagePath}")`;
+      document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
+    } else {
+      // Let theme CSS handle the default
+      document.documentElement.style.removeProperty('--dgm-ring-frame');
+    }
   }
 }
 
@@ -66,21 +91,26 @@ export function registerGMHUDSettings() {
     onChange: (value) => {
       console.log("[DEBUG] File picker returned:", value);
       
-      // Update CSS variable for ring frame
-      let frameUrl;
-      if (value.trim()) {
-        // For user-selected images, ensure they're relative to the root
-        const imagePath = value.startsWith('/') ? value : `/${value}`;
-        frameUrl = `url("${imagePath}")`;
+      // Only update if ring frames are not disabled
+      if (!getSetting("disableRingFrames")) {
+        let frameUrl;
+        if (value && value.trim()) {
+          // For user-selected images, ensure they're relative to the root
+          const imagePath = value.startsWith('/') ? value : `/${value}`;
+          frameUrl = `url("${imagePath}")`;
+          document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
+        } else {
+          // No custom frame - let theme CSS handle the default
+          document.documentElement.style.removeProperty('--dgm-ring-frame');
+        }
+        
+        if (getSetting(SETTINGS.debug)) {
+          console.log(`[GM HUD] Ring frame updated:`, value ? `custom: ${value}` : 'theme default');
+        }
       } else {
-        // Default frame
-        frameUrl = `url("modules/${MODULE_ID}/assets/ui/dgm-hud-frame.webp")`;
-      }
-      
-      document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
-      
-      if (getSetting(SETTINGS.debug)) {
-        console.log(`[GM HUD] Ring frame updated:`, frameUrl);
+        if (getSetting(SETTINGS.debug)) {
+          console.log(`[GM HUD] Ring frames disabled - ignoring custom frame change`);
+        }
       }
     }
   });
@@ -103,6 +133,22 @@ export function registerGMHUDSettings() {
     }
   });
 
+  // Disable Ring Frames
+  game.settings.register(MODULE_ID, "disableRingFrames", {
+    name: "Disable Ring Frames",
+    hint: "Hide all ring frame overlays on portraits (useful if your tokens already have frames).",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: (value) => {
+      updateRingFrameVisibility();
+      if (getSetting(SETTINGS.debug)) {
+        console.log(`[GM HUD] Ring frames ${value ? 'disabled' : 'enabled'}`);
+      }
+    }
+  });
+
   // Debug Mode
   game.settings.register(MODULE_ID, SETTINGS.debug, {
     name: "Debug Mode",
@@ -120,17 +166,8 @@ export function registerGMHUDSettings() {
 
   // Initialize settings on ready
   Hooks.once("ready", () => {
-    // Initialize custom frame
-    const customFrame = getSetting(SETTINGS.customFrame);
-    if (customFrame && customFrame.trim()) {
-      const imagePath = customFrame.startsWith('/') ? customFrame : `/${customFrame}`;
-      const frameUrl = `url("${imagePath}")`;
-      document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
-      
-      if (getSetting(SETTINGS.debug)) {
-        console.log(`[GM HUD] Custom ring frame loaded:`, frameUrl);
-      }
-    }
+    // Initialize ring frame visibility (handles both custom frames and disable setting)
+    updateRingFrameVisibility();
     
     // Initialize ring frame scale
     const scale = getSetting(SETTINGS.ringFrameScale) || 0;
@@ -154,7 +191,6 @@ export function registerGMHUDSettings() {
         debugLog("Ring frame scale slider not found");
       }
     });
-    
   });
 }
 

@@ -9,7 +9,7 @@
   --dgm-muted: #c9c3d7;
   --dgm-accent: #f2c24b;
   --dgm-accent-ink: #2b220a;
-  --dgm-ring-frame: url("../assets/ui/dgm-hud-frame.webp");
+  --dgm-ring-frame: none !important;
   --dgm-ring-overlap: 2px;
   --dgm-ring-scale: 100px;
 }
@@ -231,6 +231,11 @@
   border-radius: 50%;
   z-index: 3;
   pointer-events: none;
+}
+
+/* Force disable rings when class is present - higher specificity */
+.dgm-disable-rings .dgm-portrait-wrapper::after {
+  display: none !important;
 }
 
 .dgm-features-toggle {
