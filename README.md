@@ -73,7 +73,7 @@ https://github.com/user-attachments/assets/ee8e4164-1c1d-4b13-9182-5f461c320f8f
 
 ## Installation
 
-Go to Add-on Modules and search for _daggerheart gm hud_ **<< awaiting Foundry's approval, use manual method below for now**
+Go to Add-on Modules and search for _daggerheart gm hud_. Click Install.
 
 OR
 
@@ -83,6 +83,8 @@ Use the link below for a manual installation:
 ```
 https://raw.githubusercontent.com/mordachai/daggerheart-gm-hud/main/module.json
 ```
+
+Remember to activate the module in your world.
 
 ## Requirements
 
