@@ -8,6 +8,9 @@ A streamlined HUD for Game Masters running Daggerheart sessions, providing quick
 
 <img width="1130" height="768" alt="image" src="https://github.com/user-attachments/assets/6c2bd102-8e7f-44b5-86ae-d8d63ba2331a" />
 
+
+https://github.com/user-attachments/assets/8256bc3f-ae30-45b0-b933-dc727646f66b
+
 ## HUD Mouse Controls:
 
 ### On the Core (Portrait Area):
@@ -56,6 +59,8 @@ Choose from multiple color schemes:
 - Ironclad (Blue)
 - Wildfire (Orange)
 - Frostbite (Cyan)
+
+https://github.com/user-attachments/assets/ee8e4164-1c1d-4b13-9182-5f461c320f8f
 
 <img width="838" height="570" alt="image" src="https://github.com/user-attachments/assets/f7f5c9a2-49d0-428a-9330-c40391c92c54" />
 
