@@ -140,6 +140,8 @@ Hooks.on("controlToken", (token, controlled) => {
   }
 });
 
+Hooks.on('updateToken', DaggerheartGMHUD.onUpdateToken);
+
 /**
  * Handle token deletion
  */

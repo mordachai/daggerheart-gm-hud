@@ -6,31 +6,53 @@ import { enrichItemDescription, toHudInlineButtons } from "../helpers/inline-rol
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-/**
- * Set panel open direction (adapted from player HUD)
- */
 function setGMPanelOpenDirection(panel) {
-  if (!panel) return;
+  if (!panel) {
+    debugLog("setGMPanelOpenDirection: No panel provided");
+    return;
+  }
+
+  debugLog("setGMPanelOpenDirection called for panel:", panel);
+  debugLog("Panel display style:", getComputedStyle(panel).display);
+  debugLog("Panel visibility:", getComputedStyle(panel).visibility);
 
   // Get the ENTIRE HUD container bounds, not just the tabwrap
   const hudContainer = panel.closest(".dgm-container") || panel.closest(".dgm-hud") || panel.parentElement;
+  
+  if (!hudContainer) {
+    debugLog("setGMPanelOpenDirection: No HUD container found");
+    return;
+  }
+  
   const rect = hudContainer.getBoundingClientRect();
+  debugLog("HUD container rect:", rect);
 
   // Calculate space from the HUD edges to viewport edges
   const spaceAbove = rect.top;
   const spaceBelow = window.innerHeight - rect.bottom;
+  debugLog("Space calculations:", { spaceAbove, spaceBelow, viewportHeight: window.innerHeight });
 
   // Estimate needed height: content's natural height (improved)
   const contentHeight = panel.scrollHeight || 320;
   const minRoom = 220;     // prevent jitter
   const maxContentHeight = Math.min(window.innerHeight * 0.7, 500);
   const need = Math.max(minRoom, Math.min(contentHeight, maxContentHeight));
+  
+  debugLog("Height calculations:", { 
+    contentHeight, 
+    scrollHeight: panel.scrollHeight,
+    offsetHeight: panel.offsetHeight,
+    clientHeight: panel.clientHeight,
+    need 
+  });
 
   // Choose direction based on space outside the HUD
   let dir;
   if (spaceBelow >= need) dir = "down";
   else if (spaceAbove >= need) dir = "up";
   else dir = (spaceBelow >= spaceAbove) ? "down" : "up";
+
+  debugLog("Direction logic:", { spaceBelow, spaceAbove, need, direction: dir });
 
   // Apply direction and max height
   panel.setAttribute("data-open-dir", dir);
@@ -47,11 +69,14 @@ function setGMPanelOpenDirection(panel) {
   panel.style.setProperty("--dgm-panel-gap", "8px");
 
   debugLog(`Panel direction set to "${dir}", max height: ${finalMaxHeight}px (space above: ${spaceAbove}, below: ${spaceBelow})`);
+  debugLog("Panel data-open-dir attribute:", panel.getAttribute("data-open-dir"));
+  debugLog("Panel CSS custom properties:", {
+    maxHeight: panel.style.getPropertyValue("--dgm-panel-maxh"),
+    gap: panel.style.getPropertyValue("--dgm-panel-gap")
+  });
 }
 
-/**
- * Check if feature has actions (works with Foundry Collections)
- */
+
 function featureHasActions(item) {
   const actions = item.system?.actions;
   if (!actions) return false;
@@ -85,6 +110,18 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     this.token = token ?? null;
     this._lastPosition = null;
     this._isDragging = false;
+    this._showFill = false;
+  }
+
+  get showFill() {
+    // Get from user flag, default to false
+    return game.user.getFlag("daggerheart-gm-hud", "showFill") ?? false;
+  }
+
+  async setShowFill(value) {
+    // Save to user flag
+    await game.user.setFlag("daggerheart-gm-hud", "showFill", value);
+    this._showFill = value; // Keep local copy for immediate access
   }
 
   async _executeFeature(item, actionPath = "use") {
@@ -138,100 +175,160 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     }
   }
 
+  async _rollReaction() {
+    const actor = this.actor;
+    if (!actor) return;
+
+    debugLog("Rolling reaction for:", actor.name);
+
+    try {
+      // Use the forum-suggested approach with localization
+      const config = {
+        event: { 
+          preventDefault: () => {},
+          stopPropagation: () => {},
+          target: { dataset: {} }
+        },
+        title: `${game.i18n.localize("DAGGERHEART.GENERAL.reactionRoll")}: ${actor.name}`,
+        headerTitle: game.i18n.localize("DAGGERHEART.GENERAL.reactionRoll"),
+        roll: {
+          type: 'trait'  // Changed from 'reaction' to 'trait'
+        },
+        actionType: 'reaction',  // Added this key property
+        hasRoll: true,
+        data: actor.getRollData()
+      };
+
+      // Call the actor's diceRoll method with the new config
+      await actor.diceRoll(config);
+      
+      debugLog("Reaction roll completed successfully");
+      
+    } catch (err) {
+      console.error("[GM HUD] Reaction roll failed", err);
+      ui.notifications?.error("Reaction roll failed (see console)");
+    }
+  }
+
   async _rollDamage() {
     const actor = this.actor;
     if (!actor) return;
 
-    const attackData = actor.system?.attack;
-    if (!attackData?.damage) {
-      ui.notifications?.warn("No damage configured for this attack");
-      return;
-    }
+    const atk = actor.system?.attack;
+    const parts = atk?.damage?.parts;
+    if (!Array.isArray(parts) || parts.length === 0) return;
 
-    debugLog("Opening damage dialog for:", attackData.name);
+    // Build a Foundry formula like "4d12+15 + 2d6+1"
+    const formula = parts
+      .map(p => {
+        const v = p?.value ?? {};
+        const n   = Math.max(1, Number(v.flatMultiplier ?? 1));     // number of dice
+        const die = normalizeDie(v.dice);                            // "d12" -> "d12"
+        const bonus = numberish(v.bonus);
+        const seg = `${n}${die}`;
+        return bonus != null && bonus !== 0 ? `${seg}${bonus >= 0 ? "+" : ""}${bonus}` : seg;
+      })
+      .filter(Boolean)
+      .join(" + ");
+    if (!formula) return;
 
-    try {
-      // Use the Daggerheart system's DamageDialog
-      const DamageDialog = CONFIG.DAGGERHEART.dialogs.DamageDialog;
-      
-      if (DamageDialog) {
-        // Create and render the damage dialog
-        const dialog = new DamageDialog({
-          damage: attackData.damage,
-          actor: actor,
-          title: `${attackData.name} - Damage Roll`
-        });
-        
-        await dialog.render(true);
-      } else {
-        // Fallback if dialog not available
-        ui.notifications?.warn("Damage dialog not available");
-      }
-      
-    } catch (err) {
-      console.error("[GM HUD] Damage dialog failed", err);
-      ui.notifications?.error("Damage dialog failed (see console)");
-    }
+    const roll = await (new Roll(formula, actor.getRollData?.() ?? {})).evaluate({ async: true });
+    if (game.dice3d?.isEnabled?.()) {
+    // Show 3D dice using current roll mode, synced for all players
+    const rollMode = game.settings.get("core", "rollMode");
+    await game.dice3d.showForRoll(roll, game.user, true, rollMode);
   }
+    const total = roll.total;
 
-  async _createRangeTemplate(range) {
-    if (!canvas?.ready || !canvas.scene) return;
+    // Build dice faces markup with system classes
+    const diceFacesHTML = roll.dice.map(die => {
+      const faceClass = `dice d${die.faces}`; // e.g. "dice d12"
+      const faces = die.results.map(r => {
+        return `
+          <div class="roll-die">
+            <div class="${faceClass}">${r.result}</div>
+          </div>`;
+      }).join("");
+      return `<div class="roll-dice">${faces}</div>`;
+    }).join("");
 
-    const squaresByRange = {
-      melee: 1,       // skipped
-      veryclose: 3,
-      close: 6,
-      far: 12,
-      veryfar: 13     // skipped
-    };
+    // Inline dice summary (e.g., "8+3+11+2 + 5+1")
+    const inlineDice = roll.dice.map(d => d.results.map(r => r.result).join("+")).filter(Boolean).join(" + ");
 
-    const r = String(range ?? "").toLowerCase().trim();
-    const squares = squaresByRange[r];
-    if (!squares || r === "melee" || r === "veryfar") return;
+    // Compute modifier (sum of all flat bonuses across parts)
+    const diceTotal = roll.dice.reduce((s, d) => s + (d.total ?? 0), 0);
+    const mod = total - diceTotal;
+    const modSeg = mod ? ` ${mod > 0 ? "+" : "-"}${Math.abs(mod)}` : "";
 
-    // choose a source token (this.token preferred; else first controlled)
-    const tok = this.token ?? canvas.tokens.controlled[0];
-    if (!tok) return;
+    const actorLine = `${actor.name}`;
+    const attackName = atk.name ?? "Attack";
+    const headerLine = `${attackName}`;
+    const img = atk.img || "icons/svg/sword.svg";
 
-    // scene grid metadata
-    const unitsPerSquare = canvas.scene.grid.distance ?? 5;   // e.g., 5 ft per square
-    const distanceUnits  = squares * unitsPerSquare;          // convert squares -> scene units
+    const targets = Array.from(game.user?.targets ?? []);
+    const targetNames = targets.map(t => t.name).join(", ") || "<i>No current target</i>";
 
-    // center position in scene pixels
-    const center = tok.center ?? {
-      x: (tok.document?.x ?? tok.x) + ((tok.document?.width ?? tok.w ?? 1) * canvas.grid.size) / 2,
-      y: (tok.document?.y ?? tok.y) + ((tok.document?.height ?? tok.h ?? 1) * canvas.grid.size) / 2
-    };
 
-    const data = {
-      t: "circle",
-      x: center.x,
-      y: center.y,
-      distance: distanceUnits,           // <-- scene distance units
-      direction: 0,
-      angle: 0,
-      width: 0,
-      elevation: tok.document?.elevation ?? tok.elevation ?? 0,
-      borderColor: "#FF6B35",
-      fillColor: game.user.color,        // keep solid 6-digit hex
-      texture: "",
-      hidden: false,
-      flags: {
-        "daggerheart-gm-hud": {
-          range,
-          squares,
-          unitsPerSquare,
-          distanceUnits,
-          actorId: this.actor?.id,
-          tokenId: tok.id ?? tok.document?.id,
-          createdAt: Date.now()
-        }
-      },
-      author: game.user.id               // v13 field name
-    };
+    // --- SYSTEM-SHAPED HTML ---
+    const content = `
+    <div class="message-content">
+      <div class="chat-roll">
 
-    const [doc] = await canvas.scene.createEmbeddedDocuments("MeasuredTemplate", [data]);
-    return canvas.templates.get(doc?.id ?? "");
+        <div class="roll-part-header"><span>${headerLine}</span></div>
+
+        <!-- Optional image banner like your card -->
+        <div class="roll-part roll-section">
+          <div class="roll-part-content">
+            <img src="${img}" alt="${attackName}" style="width:100%;height:110px;object-fit:cover;display:block;margin:6px 0;"/>
+          </div>
+        </div>
+
+        <div class="dice-roll" data-action="expandRoll">
+          <div class="roll-part-header"><div><span>Formula</span></div></div>
+          <div class="roll-part-content dice-result">
+            <div class="dice-tooltip">
+              <div class="wrapper">
+                <div class="roll-dice-block">
+                  ${diceFacesHTML}
+                </div>
+              </div>
+              <div class="roll-formula">${formula}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="roll-part-header"><div></div></div>
+
+        <!-- Total result  -->
+        <div class="roll-part roll-section">
+          <div class="roll-part-content">
+            <div class="roll-result-container">
+              <span class="roll-result-value">${total}</span>
+              <span class="roll-result-desc"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="roll-part-header"><div></div></div>
+      </div>
+    </div>`;
+
+
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content
+    });
+
+    // --- helpers ---
+    function normalizeDie(d) {
+      const s = String(d ?? "").trim().toLowerCase().replace(/\s+/g, "");
+      const m = s.match(/^d(\d+)$/) || s.match(/^\d*d(\d+)$/) || s.match(/(\d+)$/);
+      return m ? `d${m[1]}` : "d6";
+    }
+    function numberish(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    }
   }
 
   _buildDamageFormula(damageValue) {
@@ -246,243 +343,481 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     return formula;
   }
 
-  async _rollReaction() {
-      const actor = this.actor;
-      if (!actor) return;
+  async _createRangeTemplate(range) {
+  if (!canvas?.ready || !canvas.scene) return;
 
-      debugLog("Rolling reaction for:", actor.name);
+  const squaresByRange = {
+    melee: 1,       // skipped
+    veryclose: 3,
+    close: 6,
+    far: 12,
+    veryfar: 13     // skipped
+  };
 
-      try {
-          // Find the actor's sheet
-          const sheet = actor.sheet;
-          if (sheet && sheet.rendered) {
-              // Try to trigger the same method the button uses
-              const fakeEvent = new Event('click');
-              await sheet.constructor.reactionRoll.call(sheet, fakeEvent);
-          } else {
-              // Fallback to direct method call with event simulation
-              const fakeEvent = { 
-                  preventDefault: () => {},
-                  stopPropagation: () => {},
-                  target: { dataset: {} }
-              };
-              
-              const config = {
-                  event: fakeEvent, // Adding the event parameter
-                  title: `Reaction Roll: ${actor.name}`,
-                  headerTitle: 'Adversary Reaction Roll',
-                  roll: {
-                      type: 'reaction'
-                  },
-                  type: 'trait',
-                  hasRoll: true,
-                  data: actor.getRollData()
-              };
+  const r = String(range ?? "").toLowerCase().trim();
+  const squares = squaresByRange[r];
+  if (!squares || r === "melee" || r === "veryfar") return;
 
-              await actor.diceRoll(config);
-          }
-      } catch (err) {
-          console.error("[GM HUD] Reaction roll failed", err);
-          ui.notifications?.error("Reaction roll failed (see console)");
+  const tok = this.token ?? canvas.tokens.controlled[0];
+  if (!tok) return;
+
+  await this._cleanupExistingTemplates(tok);
+
+  const unitsPerSquare = canvas.scene.grid.distance ?? 5;
+  const distanceUnits  = squares * unitsPerSquare;
+
+  const center = tok.center ?? {
+    x: (tok.document?.x ?? tok.x) + ((tok.document?.width ?? tok.w ?? 1) * canvas.grid.size) / 2,
+    y: (tok.document?.y ?? tok.y) + ((tok.document?.height ?? tok.h ?? 1) * canvas.grid.size) / 2
+  };
+
+  const data = {
+    t: "circle",
+    x: center.x,
+    y: center.y,
+    distance: distanceUnits,
+    direction: 0,
+    angle: 0,
+    width: 0,
+    elevation: tok.document?.elevation ?? tok.elevation ?? 0,
+    borderColor: "#FF6B35",
+    fillColor: this.showFill ? game.user.color : "#00000000",
+    texture: "",
+    hidden: false,
+    flags: {
+      "daggerheart-gm-hud": {
+        range,
+        squares,
+        unitsPerSquare,
+        distanceUnits,
+        actorId: this.actor?.id,
+        tokenId: tok.id ?? tok.document?.id,
+        createdAt: Date.now(),
+        hudInstance: this.id || "default"
       }
+    },
+    author: game.user.id
+  };
+
+  const [doc] = await canvas.scene.createEmbeddedDocuments("MeasuredTemplate", [data]);
+  
+  return canvas.templates.get(doc?.id ?? "");
+}
+
+  async _cleanupExistingTemplates(token) {
+    if (!canvas?.scene || !token) return;
+
+    try {
+      const tokenId = token.id ?? token.document?.id;
+      const actorId = this.actor?.id;
+      
+      // Find templates created by this HUD for this token/actor
+      const templatesToDelete = canvas.scene.templates.filter(template => {
+        const flags = template.flags?.["daggerheart-gm-hud"];
+        if (!flags) return false;
+        
+        // Match by token ID or actor ID
+        return (flags.tokenId === tokenId) || (flags.actorId === actorId);
+      });
+
+      if (templatesToDelete.length > 0) {
+        const templateIds = templatesToDelete.map(t => t.id);
+        await canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", templateIds);
+      }
+    } catch (err) {
+      console.error("[GM HUD] Template cleanup failed:", err);
+      ui.notifications?.error("Template cleanup failed (see console)");
+    }
+  }
+
+  async _cleanupAllModuleTemplates() {
+    if (!canvas?.scene) return;
+
+    try {
+      const templatesToDelete = canvas.scene.templates.filter(template => {
+        return template.flags?.["daggerheart-gm-hud"];
+      });
+
+      if (templatesToDelete.length > 0) {
+        const templateIds = templatesToDelete.map(t => t.id);
+        await canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", templateIds);
+      }
+    } catch (err) {
+      console.error("[GM HUD] Full cleanup failed:", err);
+      ui.notifications?.error("Template cleanup failed (see console)");
+    }
+  }
+
+  _hasTemplateForRange(token, range) {
+    if (!canvas?.scene || !token) return false;
+    
+    const tokenId = token.id ?? token.document?.id;
+    return canvas.scene.templates.some(template => {
+      const flags = template.flags?.["daggerheart-gm-hud"];
+      return flags && flags.tokenId === tokenId && flags.range === range;
+    });
+  }
+
+  async _cleanupRangeTemplate(token, range) {
+    if (!canvas?.scene || !token) return;
+    
+    try {
+      const tokenId = token.id ?? token.document?.id;
+      const templatesToDelete = canvas.scene.templates.filter(template => {
+        const flags = template.flags?.["daggerheart-gm-hud"];
+        return flags && flags.tokenId === tokenId && flags.range === range;
+      });
+
+      if (templatesToDelete.length > 0) {
+        const templateIds = templatesToDelete.map(t => t.id);
+        await canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", templateIds);
+      }
+    } catch (err) {
+      console.error("[GM HUD] Range template cleanup failed:", err);
+      ui.notifications?.error("Range template cleanup failed");
+    }
+  }
+
+  _updateRangeButtonState(button, range) {
+    const token = this.token ?? canvas.tokens.controlled[0];
+    if (!token) return;
+    
+    const hasTemplate = this._hasTemplateForRange(token, range);
+    const icon = button.querySelector('i');
+    
+    // ADD NULL CHECK HERE:
+    if (!icon) return;
+    
+    if (hasTemplate) {
+      // Template is active - show "remove" state
+      icon.className = 'fa-solid fa-circle-xmark';
+      button.classList.add('active');
+    } else {
+      // Template is inactive - show "create" state  
+      icon.className = 'fa-solid fa-bullseye';
+      button.classList.remove('active');
+    }
+  }
+
+  static onUpdateToken(tokenDocument, changes) {
+    // Only proceed if position changed
+    if (!('x' in changes || 'y' in changes)) return;
+    
+    try {
+      // Find templates for this token
+      const tokenId = tokenDocument.id;
+      const templatesToUpdate = canvas.scene.templates.filter(template => {
+        const flags = template.flags?.["daggerheart-gm-hud"];
+        return flags && flags.tokenId === tokenId;
+      });
+
+      if (templatesToUpdate.length === 0) return;
+
+      // Calculate new center position
+      const token = canvas.tokens.get(tokenId);
+      if (!token) return;
+
+      const newCenter = {
+        x: (changes.x ?? token.x) + (token.w / 2),
+        y: (changes.y ?? token.y) + (token.h / 2)
+      };
+
+      // Update template positions
+      const updates = templatesToUpdate.map(template => ({
+        _id: template.id,
+        x: newCenter.x,
+        y: newCenter.y
+      }));
+
+      canvas.scene.updateEmbeddedDocuments("MeasuredTemplate", updates);
+    } catch (err) {
+      console.error("[GM HUD] Token update failed:", err);
+    }
   }
 
   _bindDelegatedEvents() {
-    const rootEl = this.element;
-    if (!rootEl || this._delegatedBound) return;
+      const rootEl = this.element;
+      if (!rootEl || this._delegatedBound) return;
 
-    const stop = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
+      const stop = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
 
-    // Main click handler
-    rootEl.addEventListener("click", async (ev) => {
-      const actor = this.actor;
-      if (!actor) return;
+      // Main click handler
+      rootEl.addEventListener("click", async (ev) => {
+        const actor = this.actor;
+        if (!actor) return;
 
-      // Features toggle - UPDATED with panel direction calculation
-      const featuresToggle = ev.target.closest("[data-action='toggle-features']");
-      if (featuresToggle) {
-        stop(ev);
-        const shell = rootEl.querySelector(".dgm-hud");
-        const isOpen = shell?.getAttribute("data-open") === "features";
-        const newState = isOpen ? "" : "features";
-        shell?.setAttribute("data-open", newState);
-        featuresToggle.setAttribute("aria-expanded", String(!isOpen));
-        
-        if (!isOpen) {
-          // Panel is opening - set direction
-          const panel = rootEl.querySelector(".dgm-panel--features");
-          if (panel) {
-            requestAnimationFrame(() => {
-              setGMPanelOpenDirection(panel);
+        // Features toggle
+        const featuresToggle = ev.target.closest("[data-action='toggle-features']");
+        if (featuresToggle) {
+          stop(ev);
+          const shell = rootEl.querySelector(".dgm-hud");
+          const isOpen = shell?.getAttribute("data-open") === "features";
+          const newState = isOpen ? "" : "features";
+          shell?.setAttribute("data-open", newState);
+          featuresToggle.setAttribute("aria-expanded", String(!isOpen));
+          
+          if (!isOpen) {
+            const panel = rootEl.querySelector(".dgm-panel--features");
+            if (panel) {
+              requestAnimationFrame(() => {
+                setGMPanelOpenDirection(panel);
+              });
+            }
+          }
+          return;
+        }
+
+        // Attack roll
+        const attackBtn = ev.target.closest("[data-action='roll-attack']");
+        if (attackBtn) {
+          stop(ev);
+          await this._rollAttack();
+          return;
+        }
+
+        // Damage roll
+        const damageBtn = ev.target.closest("[data-action='roll-damage']");
+        if (damageBtn) {
+          stop(ev);
+          await this._rollDamage();
+          return;
+        }
+
+        // Reaction roll
+        const reactionBtn = ev.target.closest("[data-action='roll-reaction']");
+        if (reactionBtn) {
+          stop(ev);
+          await this._rollReaction();
+          return;
+        }
+
+        // Feature execution
+        const featureExec = ev.target.closest("[data-action='feature-exec']");
+        if (featureExec) {
+          stop(ev);
+          const item = actor.items.get(featureExec.dataset.featureId);
+          const actionPath = featureExec.dataset.actionPath || "use";
+          if (item) await this._executeFeature(item, actionPath);
+          return;
+        }
+
+        // Feature to chat
+        const featureChat = ev.target.closest("[data-action='feature-to-chat']");
+        if (featureChat) {
+          stop(ev);
+          const item = actor.items.get(featureChat.dataset.featureId);
+          if (item) await this._sendFeatureToChat(item);
+          return;
+        }
+
+        // Range template toggle (left-click)
+        const rangeDetails = ev.target.closest("[data-action='create-range-template']");
+        if (rangeDetails) {
+          stop(ev);
+          const range = rangeDetails.dataset.range || rangeDetails.textContent?.trim();
+          if (range) {
+            const token = this.token ?? canvas.tokens.controlled[0];
+            if (token && this._hasTemplateForRange(token, range)) {
+              // Template exists - remove it
+              await this._cleanupRangeTemplate(token, range);
+            } else {
+              // Template doesn't exist - create it
+              await this._createRangeTemplate(range);
+            }
+            
+            // Update icon state
+            this._updateRangeButtonState(rangeDetails, range);
+          }
+          return;
+        }
+
+        // Template cleanup (individual)
+        const cleanupBtn = ev.target.closest("[data-action='cleanup-templates']");
+        if (cleanupBtn) {
+          stop(ev);
+          const token = this.token ?? canvas.tokens.controlled[0];
+          if (token) {
+            await this._cleanupExistingTemplates(token);
+            this._updateAllRangeButtonStates();
+            const shell = rootEl.querySelector(".dgm-hud");
+            shell?.setAttribute("data-open", "");
+          }
+          return;
+        }
+
+        // Template cleanup (all module templates)
+        const cleanupAllBtn = ev.target.closest("[data-action='cleanup-all-templates']");
+        if (cleanupAllBtn) {
+          stop(ev);
+          await this._cleanupAllModuleTemplates();
+          this._updateAllRangeButtonStates();
+          const shell = rootEl.querySelector(".dgm-hud");
+          shell?.setAttribute("data-open", "");
+          return;
+        }
+
+        // Toggle fill color (add this case in your existing click handler)
+        const toggleFill = ev.target.closest("[data-action='toggle-fill']");
+        if (toggleFill) {
+          stop(ev);
+          const newValue = !this.showFill;
+          await this.setShowFill(newValue);
+          
+          // Update existing templates
+          const token = this.token ?? canvas.tokens.controlled[0];
+          if (token) {
+            const tokenId = token.id ?? token.document?.id;
+            const templatesToUpdate = canvas.scene.templates.filter(template => {
+              const flags = template.flags?.["daggerheart-gm-hud"];
+              return flags && flags.tokenId === tokenId;
             });
+
+            if (templatesToUpdate.length > 0) {
+              const updates = templatesToUpdate.map(template => ({
+                _id: template.id,
+                fillColor: newValue ? game.user.color : "#00000000"
+              }));
+              
+              canvas.scene.updateEmbeddedDocuments("MeasuredTemplate", updates);
+            }
+          }
+          
+          // Update button appearance
+          toggleFill.classList.toggle('active', newValue);
+          return;
+        }
+
+        // Inline roll buttons
+        const inlineRoll = ev.target.closest("[data-action='inline-roll']");
+        if (inlineRoll) {
+          stop(ev);
+          const formula = inlineRoll.dataset.formula;
+          if (formula) {
+            const roll = new Roll(formula, actor.getRollData());
+            roll.toMessage({ speaker: ChatMessage.getSpeaker({ actor }) });
+          }
+          return;
+        }
+
+        // Inline duality roll buttons  
+        const inlineDuality = ev.target.closest("[data-action='inline-duality']");
+        if (inlineDuality) {
+          stop(ev);
+          const params = inlineDuality.dataset.params;
+          if (params) {
+            ui.chat?.processMessage?.(`/dr ${params}`);
+          }
+          return;
+        }
+
+      }, true);
+
+      // Right-click handler
+      rootEl.addEventListener("contextmenu", async (ev) => {
+        const actor = this.actor;
+        if (!actor) return;
+
+        // Range panel toggle (right-click)
+        const rangeDetails = ev.target.closest("[data-action='create-range-template']");
+        if (rangeDetails) {
+          stop(ev);
+          const shell = rootEl.querySelector(".dgm-hud");
+          const isOpen = shell?.getAttribute("data-open") === "range";
+          const newState = isOpen ? "" : "range";
+          shell?.setAttribute("data-open", newState);
+          
+          if (!isOpen) {
+            const panel = rootEl.querySelector(".dgm-panel--range");
+            if (panel) {
+              requestAnimationFrame(() => {
+                setGMPanelOpenDirection(panel);
+              });
+            }
+          }
+          return;
+        }
+
+        // Resource adjustments (HP/Stress) - right-click decreases
+        const valueEl = ev.target.closest(".dgm-count .value");
+        if (valueEl) {
+          stop(ev);
+          
+          const bind = valueEl.dataset.bind;
+          if (bind === "hp") {
+            const max = Number(actor.system?.resources?.hitPoints?.max ?? 0);
+            await this._adjustResource(actor, "system.resources.hitPoints.value", -1, { min: 0, max });
+            return;
+          }
+          if (bind === "stress") {
+            const max = Number(actor.system?.resources?.stress?.max ?? 0);
+            await this._adjustResource(actor, "system.resources.stress.value", -1, { min: 0, max });
+            return;
           }
         }
-        return;
-      }
+      }, true);
 
-      // Attack roll
-      const attackBtn = ev.target.closest("[data-action='roll-attack']");
-      if (attackBtn) {
-        stop(ev);
-        await this._rollAttack();
-        return;
-      }
+      // Second click handler for resource adjustments (HP/Stress) - left-click increases
+      rootEl.addEventListener("click", async (ev) => {
+        const actor = this.actor;
+        if (!actor) return;
 
-      // Damage roll
-      const damageBtn = ev.target.closest("[data-action='roll-damage']");
-      if (damageBtn) {
-        stop(ev);
-        await this._rollDamage();
-        return;
-      }
-
-      // Reaction roll
-      const reactionBtn = ev.target.closest("[data-action='roll-reaction']");
-      if (reactionBtn) {
-        stop(ev);
-        await this._rollReaction();
-        return;
-      }
-
-      // Feature execution
-      const featureExec = ev.target.closest("[data-action='feature-exec']");
-      if (featureExec) {
-        stop(ev);
-        const item = actor.items.get(featureExec.dataset.featureId);
-        const actionPath = featureExec.dataset.actionPath || "use";
-        if (item) await this._executeFeature(item, actionPath);
-        return;
-      }
-
-      // Range template creation
-      const rangeDetails = ev.target.closest("[data-action='create-range-template']");
-      if (rangeDetails) {
-        stop(ev);
-        const range = rangeDetails.dataset.range || rangeDetails.textContent?.trim();
-        if (range) await this._createRangeTemplate(range);
-        return;
-      }
-
-      // Feature to chat
-      const featureChat = ev.target.closest("[data-action='feature-to-chat']");
-      if (featureChat) {
-        stop(ev);
-        const item = actor.items.get(featureChat.dataset.featureId);
-        if (item) await this._sendFeatureToChat(item);
-        return;
-      }
-
-      // Inline roll buttons
-      const inlineRoll = ev.target.closest("[data-action='inline-roll']");
-      if (inlineRoll) {
-        stop(ev);
-        const formula = inlineRoll.dataset.formula;
-        if (formula) {
-          const roll = new Roll(formula, actor.getRollData());
-          roll.toMessage({ speaker: ChatMessage.getSpeaker({ actor }) });
+        const valueEl = ev.target.closest(".dgm-count .value");
+        if (valueEl) {
+          stop(ev);
+          
+          const bind = valueEl.dataset.bind;
+          if (bind === "hp") {
+            const max = Number(actor.system?.resources?.hitPoints?.max ?? 0);
+            await this._adjustResource(actor, "system.resources.hitPoints.value", +1, { min: 0, max });
+            return;
+          }
+          if (bind === "stress") {
+            const max = Number(actor.system?.resources?.stress?.max ?? 0);
+            await this._adjustResource(actor, "system.resources.stress.value", +1, { min: 0, max });
+            return;
+          }
         }
-        return;
-      }
+      }, true);
 
-      // Inline duality roll buttons  
-      const inlineDuality = ev.target.closest("[data-action='inline-duality']");
-      if (inlineDuality) {
-        stop(ev);
-        const params = inlineDuality.dataset.params;
-        if (params) {
-          ui.chat?.processMessage?.(`/dr ${params}`);
-        }
-        return;
-      }
+      // Double-click to open actor sheet
+      rootEl.addEventListener("dblclick", async (ev) => {
+        const actor = this.actor;
+        if (!actor) return;
 
-    }, true);
-
-    // Right-click for resource adjustments (HP/Stress)
-    rootEl.addEventListener("contextmenu", async (ev) => {
-      const actor = this.actor;
-      if (!actor) return;
-
-      const valueEl = ev.target.closest(".dgm-count .value");
-      if (valueEl) {
-        stop(ev);
-        
-        const bind = valueEl.dataset.bind;
-        if (bind === "hp") {
-          const max = Number(actor.system?.resources?.hitPoints?.max ?? 0);
-          await this._adjustResource(actor, "system.resources.hitPoints.value", -1, { min: 0, max });
+        const portrait = ev.target.closest(".dgm-portrait, .dgm-core");
+        if (portrait) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          
+          debugLog("Double-click detected, opening actor sheet for:", actor.name);
+          actor.sheet?.render(true, { focus: true });
           return;
         }
-        if (bind === "stress") {
-          const max = Number(actor.system?.resources?.stress?.max ?? 0);
-          await this._adjustResource(actor, "system.resources.stress.value", -1, { min: 0, max });
-          return;
+      }, true);
+
+      // Close panels when clicking outside
+      const onDocClick = (ev) => {
+        if (!rootEl.contains(ev.target)) {
+          const shell = rootEl.querySelector(".dgm-hud");
+          shell?.setAttribute("data-open", "");
+          const toggle = rootEl.querySelector("[data-action='toggle-features']");
+          toggle?.setAttribute("aria-expanded", "false");
         }
-      }
-    }, true);
+      };
+      document.addEventListener("pointerdown", onDocClick, { capture: true });
 
-    // Left-click for resource adjustments (HP/Stress)
-    rootEl.addEventListener("click", async (ev) => {
-      const actor = this.actor;
-      if (!actor) return;
-
-      const valueEl = ev.target.closest(".dgm-count .value");
-      if (valueEl) {
-        stop(ev);
-        
-        const bind = valueEl.dataset.bind;
-        if (bind === "hp") {
-          const max = Number(actor.system?.resources?.hitPoints?.max ?? 0);
-          await this._adjustResource(actor, "system.resources.hitPoints.value", +1, { min: 0, max });
-          return;
+      // Close panels on ESC
+      rootEl.addEventListener("keydown", (ev) => {
+        if (ev.key === "Escape") {
+          const shell = rootEl.querySelector(".dgm-hud");
+          shell?.setAttribute("data-open", "");
+          const toggle = rootEl.querySelector("[data-action='toggle-features']");
+          toggle?.setAttribute("aria-expanded", "false");
         }
-        if (bind === "stress") {
-          const max = Number(actor.system?.resources?.stress?.max ?? 0);
-          await this._adjustResource(actor, "system.resources.stress.value", +1, { min: 0, max });
-          return;
-        }
-      }
-    }, true);
+      });
 
-    // Double-click to open actor sheet
-    rootEl.addEventListener("dblclick", async (ev) => {
-      const actor = this.actor;
-      if (!actor) return;
-
-      // Check if double-click was on the portrait or core area
-      const portrait = ev.target.closest(".dgm-portrait, .dgm-core");
-      if (portrait) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        
-        debugLog("Double-click detected, opening actor sheet for:", actor.name);
-        actor.sheet?.render(true, { focus: true });
-        return;
-      }
-    }, true);
-
-    // Close features panel when clicking outside
-    const onDocClick = (ev) => {
-      if (!rootEl.contains(ev.target)) {
-        const shell = rootEl.querySelector(".dgm-hud");
-        shell?.setAttribute("data-open", "");
-        const toggle = rootEl.querySelector("[data-action='toggle-features']");
-        toggle?.setAttribute("aria-expanded", "false");
-      }
-    };
-    document.addEventListener("pointerdown", onDocClick, { capture: true });
-
-    // Close on ESC
-    rootEl.addEventListener("keydown", (ev) => {
-      if (ev.key === "Escape") {
-        const shell = rootEl.querySelector(".dgm-hud");
-        shell?.setAttribute("data-open", "");
-        const toggle = rootEl.querySelector("[data-action='toggle-features']");
-        toggle?.setAttribute("aria-expanded", "false");
-      }
-    });
-
-    this._delegatedBound = true;
-  }
+      this._delegatedBound = true;
+    }
 
   async _adjustResource(actor, path, delta, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
     const current = Number(foundry.utils.getProperty(actor, path) ?? 0);
@@ -589,12 +924,18 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         }
       }
 
+      const rangeKey = sys.attack.range || "close";
+      const rangeShort = game.i18n.localize(`DAGGERHEART.CONFIG.Range.${rangeKey}.short`);
+      const rangeName = game.i18n.localize(`DAGGERHEART.CONFIG.Range.${rangeKey}.name`);
+
       primaryAttack = {
         id: sys.attack._id || "primary",
         name: sys.attack.name || "Attack",
         img: sys.attack.img || "icons/svg/sword.svg",
         bonus: Number(sys.attack.roll?.bonus ?? 0),
-        range: sys.attack.range || "close",
+        range: rangeKey,
+        rangeShort: rangeShort,
+        rangeName: rangeName,
         damage: sys.attack.damage,
         damageType: damageType,
         damageTypeIcon: damageTypeIcon,
@@ -681,6 +1022,9 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     // Enable dragging by the core area
     this._enableDragging();
 
+    // Update range button states
+    this._updateAllRangeButtonStates();
+
     debugLog("GM HUD render complete");
   }
 
@@ -706,6 +1050,22 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       }
     } catch (err) {
       debugLog("Failed to restore position:", err);
+    }
+  }
+
+  _updateAllRangeButtonStates() {
+    const rangeButtons = this.element.querySelectorAll('[data-action="create-range-template"]');
+    rangeButtons.forEach(button => {
+      const range = button.dataset.range;
+      if (range && button.querySelector('i')) { // ADD ICON CHECK HERE
+        this._updateRangeButtonState(button, range);
+      }
+    });
+    
+    // Update fill toggle button state
+    const fillToggle = this.element.querySelector('[data-action="toggle-fill"]');
+    if (fillToggle) {
+      fillToggle.classList.toggle('active', this.showFill);
     }
   }
 

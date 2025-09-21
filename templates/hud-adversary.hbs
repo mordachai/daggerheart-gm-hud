@@ -86,14 +86,15 @@
               <div class="dgm-attack-bonus-value">{{signed primaryAttack.bonus}}</div>
             </div>
             
-            {{!-- Range - Clickable to create template --}}
+            {{!-- Range - Left-click to create template, right-click to toggle panel --}}
             <div class="dgm-attack-details dgm-roll" 
                 role="button"
                 tabindex="0"
                 data-action="create-range-template"
                 data-range="{{primaryAttack.range}}"
-                title="{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.range}}">
-                {{primaryAttack.range}}
+                title="{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}&#10;Left-click: Toggle template&#10;Right-click: Template options">
+              {{primaryAttack.rangeShort}}
+              <i class="fa-solid fa-bullseye" style="margin-left: 4px; opacity: 0.7;"></i>
             </div>
             
             {{!-- Damage - Clickable for damage roll --}}
@@ -230,5 +231,72 @@
 
     </div>
   </div>
+
+{{!-- =============== RANGE TEMPLATE PANEL =============== --}}
+<div class="dgm-tabwrap">
+  <div id="dgm-range-panel" 
+      class="dgm-panel dgm-panel--range" 
+      data-panel="range" 
+      role="dialog" 
+      aria-label="Range Template Options">
+    
+    {{!-- Panel Header --}}
+    <div class="dgm-header">
+      <header class="dgm-panel-header">
+        <div class="dgm-adversary-name">Range: {{primaryAttack.range}}</div>
+      </header>
+      <div class="dgm-divider"></div>
+    </div>
+
+    {{!-- Range Actions List --}}
+    <div class="dgm-range-actions">
+      
+      {{!-- Create Template Action --}}
+      {{#unless (eq primaryAttack.range "melee")}}
+      {{#unless (eq primaryAttack.range "veryfar")}}
+      <div class="dgm-range-action dgm-roll"
+          role="button"
+          tabindex="0"
+          data-action="create-range-template"
+          data-range="{{primaryAttack.range}}"
+          title="Create {{primaryAttack.range}} range template">
+        <i class="fa-solid fa-bullseye"></i>
+        <span>Create {{primaryAttack.range}} template</span>
+      </div>
+      {{/unless}}
+      {{/unless}}
+      
+      {{!-- Cleanup Actions --}}
+      <div class="dgm-range-action dgm-roll"
+          role="button"
+          tabindex="0"
+          data-action="cleanup-templates"
+          title="Clear templates for this token">
+        <i class="fa-solid fa-broom"></i>
+        <span>Clear templates</span>
+      </div>
+      
+      <div class="dgm-range-action dgm-roll"
+          role="button"
+          tabindex="0"
+          data-action="cleanup-all-templates"
+          title="Clear all range templates in scene">
+        <i class="fa-solid fa-trash-can"></i>
+        <span>Clear all range templates</span>
+      </div>
+
+      {{!-- Toggle Fill Action --}}
+      <div class="dgm-range-action dgm-roll"
+          role="button"
+          tabindex="0"
+          data-action="toggle-fill"
+          title="Toggle template fill color">
+        <i class="fa-solid fa-palette"></i>
+        <span>Toggle fill</span>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 </section>
