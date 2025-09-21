@@ -9,7 +9,7 @@
   --dgm-muted: #c9c3d7;
   --dgm-accent: #f2c24b;
   --dgm-accent-ink: #2b220a;
-  --dgm-ring-frame: none !important;
+  --dgm-ring-frame: none;
   --dgm-ring-overlap: 2px;
   --dgm-ring-scale: 100px;
 }

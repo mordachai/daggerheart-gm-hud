@@ -35,25 +35,58 @@ function updateRingFrameScale(value) {
 function updateRingFrameVisibility() {
   const disabled = getSetting("disableRingFrames");
   
+  console.log("[GM HUD Debug] updateRingFrameVisibility called");
+  console.log("[GM HUD Debug] Ring frames disabled:", disabled);
+  
   if (disabled) {
     // Hide all ring frames by adding a CSS class
     document.documentElement.classList.add('dgm-disable-rings');
+    console.log("[GM HUD Debug] Added dgm-disable-rings class");
   } else {
     // Remove the disable class
     document.documentElement.classList.remove('dgm-disable-rings');
+    console.log("[GM HUD Debug] Removed dgm-disable-rings class");
     
     // Handle custom frames normally
     const customFrame = getSetting(SETTINGS.customFrame);
+    console.log("[GM HUD Debug] Custom frame setting value:", customFrame);
+    
     if (customFrame && customFrame.trim()) {
-      // Use custom frame
+      // Use custom frame - apply to all HUD instances
       const imagePath = customFrame.startsWith('/') ? customFrame : `/${customFrame}`;
       const frameUrl = `url("${imagePath}")`;
+      console.log("[GM HUD Debug] Setting custom frame URL:", frameUrl);
+      
+      // Set on document root for global access
       document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
+      
+      // Also set on any existing HUD instances to override theme
+      const hudElements = document.querySelectorAll('.daggerheart-gm-hud');
+      hudElements.forEach(hud => {
+        hud.style.setProperty('--dgm-ring-frame', frameUrl);
+        console.log("[GM HUD Debug] Applied custom frame to HUD element:", hud);
+      });
+      
+      // Verify it was set
+      const actualValue = document.documentElement.style.getPropertyValue('--dgm-ring-frame');
+      console.log("[GM HUD Debug] Actual CSS property value:", actualValue);
     } else {
-      // Let theme CSS handle the default
+      // No custom frame - remove override and let theme CSS handle it
+      console.log("[GM HUD Debug] No custom frame, removing CSS property overrides");
       document.documentElement.style.removeProperty('--dgm-ring-frame');
+      
+      // Remove from any existing HUD instances
+      const hudElements = document.querySelectorAll('.daggerheart-gm-hud');
+      hudElements.forEach(hud => {
+        hud.style.removeProperty('--dgm-ring-frame');
+        console.log("[GM HUD Debug] Removed custom frame from HUD element:", hud);
+      });
     }
   }
+  
+  // Log current CSS custom properties
+  const currentRingFrame = getComputedStyle(document.documentElement).getPropertyValue('--dgm-ring-frame');
+  console.log("[GM HUD Debug] Final computed --dgm-ring-frame value:", currentRingFrame);
 }
 
 export function registerGMHUDSettings() {
@@ -89,28 +122,9 @@ export function registerGMHUDSettings() {
     default: "",
     filePicker: "image",
     onChange: (value) => {
-      console.log("[DEBUG] File picker returned:", value);
-      
-      // Only update if ring frames are not disabled
-      if (!getSetting("disableRingFrames")) {
-        let frameUrl;
-        if (value && value.trim()) {
-          // For user-selected images, ensure they're relative to the root
-          const imagePath = value.startsWith('/') ? value : `/${value}`;
-          frameUrl = `url("${imagePath}")`;
-          document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
-        } else {
-          // No custom frame - let theme CSS handle the default
-          document.documentElement.style.removeProperty('--dgm-ring-frame');
-        }
-        
-        if (getSetting(SETTINGS.debug)) {
-          console.log(`[GM HUD] Ring frame updated:`, value ? `custom: ${value}` : 'theme default');
-        }
-      } else {
-        if (getSetting(SETTINGS.debug)) {
-          console.log(`[GM HUD] Ring frames disabled - ignoring custom frame change`);
-        }
+      updateRingFrameVisibility();
+      if (getSetting(SETTINGS.debug)) {
+        console.log(`[GM HUD] Custom frame changed to:`, value || 'default');
       }
     }
   });
@@ -226,6 +240,20 @@ export function applyThemeToElement(element) {
   
   // Apply current theme
   element.classList.add(`dgm-theme-${currentTheme}`);
+  
+  // Check if we have a custom frame that should override the theme
+  try {
+    const customFrame = getSetting(SETTINGS.customFrame);
+    if (customFrame && customFrame.trim() && !getSetting("disableRingFrames")) {
+      const imagePath = customFrame.startsWith('/') ? customFrame : `/${customFrame}`;
+      const frameUrl = `url("${imagePath}")`;
+      element.style.setProperty('--dgm-ring-frame', frameUrl);
+      debugLog(`Applied custom frame "${customFrame}" to themed element`);
+    }
+  } catch (err) {
+    // Settings might not be ready yet
+    debugLog("Could not apply custom frame - settings not ready");
+  }
   
   debugLog(`Applied theme "${currentTheme}" to element`, element);
 }
