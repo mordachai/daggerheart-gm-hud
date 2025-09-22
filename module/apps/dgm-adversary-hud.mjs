@@ -76,7 +76,6 @@ function setGMPanelOpenDirection(panel) {
   });
 }
 
-
 function featureHasActions(item) {
   const actions = item.system?.actions;
   if (!actions) return false;
@@ -112,6 +111,8 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     this._isDragging = false;
     this._showFill = false;
   }
+  
+  static _filterState = "none";
 
   get showFill() {
     // Get from user flag, default to false
@@ -558,6 +559,15 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         const actor = this.actor;
         if (!actor) return;
 
+        // Feature filter buttons
+        const filterBtn = ev.target.closest(".dgm-filter-btn");
+        if (filterBtn) {
+          stop(ev);
+          const action = filterBtn.dataset.action;
+          this._handleFeatureFilter(action);
+          return;
+        }
+
         // Features toggle
         const featuresToggle = ev.target.closest("[data-action='toggle-features']");
         if (featuresToggle) {
@@ -573,6 +583,13 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
             if (panel) {
               requestAnimationFrame(() => {
                 setGMPanelOpenDirection(panel);
+                // Apply filter state after panel opens
+                requestAnimationFrame(() => {
+                  const savedFilter = game.user.getFlag("daggerheart-gm-hud", "featureFilter") || DaggerheartGMHUD._filterState;
+                  if (savedFilter && savedFilter !== 'none') {
+                    this._applyFeatureFilter(savedFilter);
+                  }
+                });
               });
             }
           }
@@ -601,7 +618,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
           stop(ev);
           await this._rollReaction();
           return;
-        }
+        }        
 
         // Feature execution
         const featureExec = ev.target.closest("[data-action='feature-exec']");
@@ -984,7 +1001,6 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
         // Step 2: Convert inline rolls to clickable buttons
         const finalHTML = toHudInlineButtons(enrichedHTML, { enableDuality: true });
         
-        // FIX: Add hasActions boolean to context
         const hasActions = featureHasActions(item);
         
         return {
@@ -992,7 +1008,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
           name: item.name || "Unnamed Feature",
           img: item.img || "icons/svg/aura.svg", 
           description: finalHTML,
-          hasActions: hasActions, // FIX: Add this boolean
+          hasActions: hasActions,
           system: item.system,
           _item: item
         };
@@ -1159,6 +1175,12 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
             setGMPanelOpenDirection(panel);
           }
         }
+        // Restore filter state from user flags or static property
+        const savedFilter = game.user.getFlag("daggerheart-gm-hud", "featureFilter") || DaggerheartGMHUD._filterState;
+        if (savedFilter && savedFilter !== 'none') {
+          DaggerheartGMHUD._filterState = savedFilter;
+          this._applyFeatureFilter(savedFilter);
+        }
       });
     };
 
@@ -1185,6 +1207,90 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
 
     handle.addEventListener("pointerdown", onDown);
     handle.style.cursor = "grab";
+  }
+
+  _applyFeatureFilter(filterType = null) {
+    const rootEl = this.element;
+    if (!rootEl) return;
+
+    // Use provided filter or current stored state
+    const filter = filterType || DaggerheartGMHUD._filterState;
+    
+    const featureItems = rootEl.querySelectorAll('.dgm-acc-item');
+    const filterButtons = rootEl.querySelectorAll('.dgm-filter-btn');
+
+    // Update button states
+    filterButtons.forEach(btn => {
+      btn.classList.remove('active');
+      const action = btn.dataset.action;
+      if ((action === 'expand-all' && filter === 'all') ||
+          (action === 'expand-actions' && filter === 'actions') ||
+          (action === 'expand-passive' && filter === 'passive') ||
+          (action === 'collapse-all' && filter === 'collapsed')) {
+        btn.classList.add('active');
+      }
+    });
+
+    // Apply filter to features
+    featureItems.forEach(item => {
+      const details = item.querySelector('details');
+      if (!details) return;
+
+      const hasActions = item.dataset.hasActions === 'true';
+
+      switch (filter) {
+        case 'all':
+          details.open = true;
+          break;
+        case 'actions':
+          details.open = hasActions;
+          break;
+        case 'passive':
+          details.open = !hasActions;
+          break;
+        case 'collapsed':
+          details.open = false;
+          break;
+        case 'none':
+        default:
+          // Don't change current state
+          break;
+      }
+    });
+
+    debugLog(`Applied feature filter: ${filter}`);
+  }
+
+  _handleFeatureFilter(action) {
+    let filterType;
+    
+    switch (action) {
+      case 'expand-all':
+        filterType = 'all';
+        break;
+      case 'expand-actions':
+        filterType = 'actions';
+        break;
+      case 'expand-passive':
+        filterType = 'passive';
+        break;
+      case 'collapse-all':
+        filterType = 'collapsed';
+        break;
+      default:
+        return;
+    }
+
+    // Store the filter state globally
+    DaggerheartGMHUD._filterState = filterType;
+    
+    // Apply the filter
+    this._applyFeatureFilter(filterType);
+    
+    // Save to user settings for persistence across sessions
+    game.user.setFlag("daggerheart-gm-hud", "featureFilter", filterType);
+    
+    debugLog(`Feature filter set to: ${filterType}`);
   }
 
   async close(opts) {

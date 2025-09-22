@@ -219,20 +219,6 @@ export function registerDHUDHelpers() {
     return Array.isArray(types) ? types.join(", ") : String(types);
   });
 
-  Hb.registerHelper("hasActions", function(item) {
-    const actions = item.system?.actions;
-    if (!actions) return false;
-    
-    if (typeof actions.size === 'number') {
-      return actions.size > 0;
-    }
-    
-    if (typeof actions === 'object') {
-      return Object.keys(actions).length > 0;
-    }
-    
-    return false;
-  });
 
 // ---- String/text helpers ----
 Hb.registerHelper("truncate", function(str, length = 50) {

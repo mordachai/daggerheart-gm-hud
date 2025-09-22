@@ -179,54 +179,86 @@
         </details>
       </div>
 
-      {{!-- Features List (accordion style) --}}
-      <div class="dgm-features-list">
-        <ul class="dgm-acc">
-          {{#each features}}
-          <li class="dgm-acc-item">
-            <details>
-              <summary>
-                {{!-- Feature Icon (clickable if has actions) --}}
-                <img class="dgm-feature-icon{{#if hasActions}} clickable{{/if}}"
-                    src="{{img}}"
-                    alt="{{name}}"
+
+      {{!-- Features List with Filter Controls --}}
+      <div class="dgm-features-container">
+        {{!-- Filter Controls (visible on hover) --}}
+        <div class="dgm-features-filter-bar">
+          <div class="dgm-filter-buttons">
+            <button class="dgm-filter-btn" 
+                    data-action="expand-all" 
+                    title="Expand all features">
+              <i class="fa-solid fa-expand-arrows-alt"></i>
+            </button>
+            <button class="dgm-filter-btn" 
+                    data-action="expand-actions" 
+                    title="Expand features with actions">
+              <i class="fa-solid fa-bolt"></i>
+            </button>
+            <button class="dgm-filter-btn" 
+                    data-action="expand-passive" 
+                    title="Expand passive features">
+              <i class="fa-solid fa-book"></i>
+            </button>
+            <button class="dgm-filter-btn" 
+                    data-action="collapse-all" 
+                    title="Collapse all features">
+              <i class="fa-solid fa-compress-arrows-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        {{!-- Your existing Features List (accordion style) --}}
+        <div class="dgm-features-list">
+          <ul class="dgm-acc">
+            {{#each features}}
+            <li class="dgm-acc-item" data-has-actions="{{hasActions}}">
+              <details>
+                <summary>
+                  {{!-- Feature Icon (clickable if has actions) --}}
+                  <img class="dgm-feature-icon{{#if hasActions}} clickable{{/if}}"
+                      src="{{img}}"
+                      alt="{{name}}"
+                      role="button"
+                      tabindex="0"
+                      data-action="{{#if hasActions}}feature-exec{{else}}feature-info{{/if}}"
+                      data-feature-id="{{id}}"
+                      title="{{name}}">
+
+                  {{!-- Feature Name --}}
+                  <span class="dgm-feature-name">{{truncate name 25}}</span>
+
+                  {{!-- Resource Info (uses, etc.) --}}
+                  {{#with (getResourceInfo _item)}}
+                  {{#if this}}
+                  <span class="dgm-feature-resource">
+                    {{#if max}}{{value}}/{{max}}{{else}}{{value}}{{/if}}
+                  </span>
+                  {{/if}}
+                  {{/with}}
+
+                  {{!-- Send to Chat Button --}}
+                  <i class="far fa-comment dgm-feature-chat"
                     role="button"
                     tabindex="0"
-                    data-action="{{#if hasActions}}feature-exec{{else}}feature-info{{/if}}"
+                    data-action="feature-to-chat"
                     data-feature-id="{{id}}"
-                    title="{{name}}">
+                    title="{{l 'DAGGERHEART.UI.Tooltip.sendToChat'}}"></i>
+                </summary>
 
-                {{!-- Feature Name --}}
-                <span class="dgm-feature-name">{{truncate name 25}}</span>
+                {{!-- Feature Description (expanded content) --}}
+                <div class="dgm-feature-content">
+                  {{{description}}}
+                </div>
+              </details>
+            </li>
+                      <div class="dgm-divider-strong"></div>
 
-                {{!-- Resource Info (uses, etc.) --}}
-                {{#with (getResourceInfo _item)}}
-                {{#if this}}
-                <span class="dgm-feature-resource">
-                  {{#if max}}{{value}}/{{max}}{{else}}{{value}}{{/if}}
-                </span>
-                {{/if}}
-                {{/with}}
-
-                {{!-- Send to Chat Button --}}
-                <i class="far fa-comment dgm-feature-chat"
-                   role="button"
-                   tabindex="0"
-                   data-action="feature-to-chat"
-                   data-feature-id="{{id}}"
-                   title="{{l 'DAGGERHEART.UI.Tooltip.sendToChat'}}"></i>
-              </summary>
-
-              {{!-- Feature Description (expanded content) --}}
-              <div class="dgm-feature-content">
-                {{{description}}}
-              </div>
-            </details>
-          </li>
-          {{else}}
-          <li class="dgm-acc-item dgm-empty">{{l "DAGGERHEART.UI.Notifications.featureIsMissing"}}</li>
-          {{/each}}
-        </ul>
+            {{else}}
+            <li class="dgm-acc-item dgm-empty">{{l "DAGGERHEART.UI.Notifications.featureIsMissing"}}</li>
+            {{/each}}
+          </ul>
+        </div>
       </div>
 
     </div>
