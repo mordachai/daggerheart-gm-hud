@@ -243,7 +243,7 @@
     {{!-- Panel Header --}}
     <div class="dgm-header">
       <header class="dgm-panel-header">
-        <div class="dgm-adversary-name">Range: {{primaryAttack.range}}</div>
+        <div class="dgm-adversary-name">{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}</div>
       </header>
       <div class="dgm-divider"></div>
     </div>
@@ -259,9 +259,9 @@
           tabindex="0"
           data-action="create-range-template"
           data-range="{{primaryAttack.range}}"
-          title="Create {{primaryAttack.range}} range template">
+          title="Create {{primaryAttack.rangeName}} range template">
         <i class="fa-solid fa-bullseye"></i>
-        <span>Create {{primaryAttack.range}} template</span>
+        <span>Create {{primaryAttack.rangeName}} template</span>
       </div>
       {{/unless}}
       {{/unless}}
@@ -273,7 +273,7 @@
           data-action="cleanup-templates"
           title="Clear templates for this token">
         <i class="fa-solid fa-broom"></i>
-        <span>Clear templates</span>
+        <span>Clear template</span>
       </div>
       
       <div class="dgm-range-action dgm-roll"

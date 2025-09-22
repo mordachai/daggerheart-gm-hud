@@ -2,6 +2,7 @@
 
 const MODULE_ID = "daggerheart-gm-hud";
 
+// Export the SETTINGS constant
 export const SETTINGS = {
   theme: "theme",
   customFrame: "customFrame", 
@@ -96,7 +97,7 @@ export function registerGMHUDSettings() {
     name: "GM HUD Theme",
     hint: "Choose the color theme for the GM HUD interface.",
     scope: "client",
-    config: game.user.isGM, // Only show in config for GMs
+    config: game.user?.isGM ?? false, // Only show in config for GMs
     type: String,
     choices: {
       "default": "Default",
@@ -117,7 +118,7 @@ export function registerGMHUDSettings() {
     name: "Custom Ring Frame",
     hint: "Choose a custom ring frame image for the portrait and attack circles. Leave empty to use the default frame.",
     scope: "world",
-    config: game.user.isGM, // Only show in config for GMs
+    config: game.user?.isGM ?? false, // Only show in config for GMs
     restricted: true, // Only GMs can modify this setting
     type: String,
     default: "",
@@ -135,7 +136,7 @@ export function registerGMHUDSettings() {
     name: "Ring Frame Scale",
     hint: "Adjust the size of the ring frame overlay. 0 is default size, negative values make it smaller, positive values make it larger.",
     scope: "client",
-    config: game.user.isGM, // Only show in config for GMs
+    config: game.user?.isGM ?? false, // Only show in config for GMs
     type: Number,
     range: {
       min: -30,
@@ -153,7 +154,7 @@ export function registerGMHUDSettings() {
     name: "Disable Ring Frames",
     hint: "Hide all ring frame overlays on portraits (useful if your tokens already have frames).",
     scope: "client",
-    config: game.user.isGM, // Only show in config for GMs
+    config: game.user?.isGM ?? false, // Only show in config for GMs
     type: Boolean,
     default: false,
     onChange: (value) => {
@@ -169,7 +170,7 @@ export function registerGMHUDSettings() {
     name: "Debug Mode",
     hint: "Enable debug console messages for the GM HUD module.",
     scope: "client",
-    config: game.user.isGM, // Only show in config for GMs
+    config: game.user?.isGM ?? false, // Only show in config for GMs
     type: Boolean,
     default: false,
     onChange: (value) => {
@@ -182,7 +183,7 @@ export function registerGMHUDSettings() {
   // Initialize settings on ready
   Hooks.once("ready", () => {
     // Only initialize if user is GM
-    if (!game.user.isGM) return;
+    if (!game.user?.isGM) return;
     
     // Initialize ring frame visibility (handles both custom frames and disable setting)
     updateRingFrameVisibility();
