@@ -449,7 +449,7 @@
   transform: translateX(-50%);
   bottom: calc(100% + var(--dgm-panel-gap, 8px));
   width: 320px;
-  max-height: var(--dgm-panel-maxh, 70vh);
+  max-height: var(--dgm-panel-maxh, 90vh);
   border: 2px solid var(--dgm-border);
   border-radius: 12px;
   padding: 12px;
@@ -520,7 +520,7 @@
   padding: 2px 8px;
   border: 1px solid var(--dgm-accent);
   border-radius: 12px;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -604,6 +604,18 @@
   margin: 1rem 0;
 }
 
+.dgm-divider-strong {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    var(--dgm-accent) 70%,
+    transparent
+  );
+  color: var(--dgm-accent);
+  margin: 0.2rem 0;
+}
+
 .dgm-section-center-title {
   --line-h: 2px;
   --gap: 0.75rem;
@@ -668,18 +680,18 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 
-.dgm-acc-item details {
+/* .dgm-acc-item details {
   border: 1px solid var(--dgm-border);
   border-radius: 6px;
   padding: 6px 8px;
-}
+} */
 
-.dgm-acc-item details[open] {
+/* .dgm-acc-item details[open] {
   border-color: var(--dgm-accent);
-}
+} */
 
 .dgm-acc-item summary {
   display: flex;
@@ -746,11 +758,11 @@
 }
 
 .dgm-feature-content {
-  margin-top: 8px;
+  /* margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--dgm-border);
+  border-top: 1px solid var(--dgm-border); */
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.2;
   color: var(--dgm-text);
 }
 
@@ -821,6 +833,82 @@
   flex: 1;
   font-weight: 600;
   letter-spacing: 0.5px;
+}
+
+/* Features Filter Container */
+.dgm-features-container {
+  position: relative;
+}
+
+/* Filter Bar - Hidden by default, visible on hover */
+.dgm-features-filter-bar {
+  opacity: 0.2;
+  transition: opacity 0.2s ease;
+  margin-bottom: 8px;
+  pointer-events: none;
+}
+
+.dgm-features-container:hover .dgm-features-filter-bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Filter Buttons Row */
+.dgm-filter-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 4px 0;
+}
+
+/* Individual Filter Button */
+.dgm-filter-btn {
+  width: 18px;
+  height: 18px;
+  border: none;
+  outline: none;
+  background: var(--dgm-surface);
+  color: var(--dgm-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  padding: 0;
+  box-shadow: none;
+}
+
+.dgm-filter-btn:hover {
+  background: var(--dgm-accent);
+  color: var(--dgm-accent-ink);
+  transform: scale(1.05);
+}
+
+.dgm-filter-btn:active {
+  transform: scale(0.95);
+}
+
+/* Active filter button state */
+.dgm-filter-btn.active {
+  background: var(--dgm-accent);
+  color: var(--dgm-accent-ink);
+  opacity: 0.9;
+}
+
+/* Feature list spacing adjustment */
+.dgm-features-list {
+  /* Keep existing styles */
+}
+
+/* Add some visual feedback when features are filtered */
+.dgm-acc-item[data-has-actions="true"] {
+  /* Existing styles */
+}
+
+.dgm-acc-item[data-has-actions="false"] {
+  /* Existing styles */
 }
 
 @media (max-width: 400px) {
