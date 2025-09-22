@@ -1,4 +1,4 @@
-// module/settings.mjs - Daggerheart GM HUD Settings
+// module/settings.mjs - Daggerheart GM HUD Settings (GM-Only Fix)
 
 const MODULE_ID = "daggerheart-gm-hud";
 
@@ -91,12 +91,12 @@ function updateRingFrameVisibility() {
 
 export function registerGMHUDSettings() {
   
-  // Theme Selector
+  // Theme Selector - CLIENT SCOPED (each user can choose their own theme)
   game.settings.register(MODULE_ID, SETTINGS.theme, {
     name: "GM HUD Theme",
     hint: "Choose the color theme for the GM HUD interface.",
     scope: "client",
-    config: true,
+    config: game.user.isGM, // Only show in config for GMs
     type: String,
     choices: {
       "default": "Default",
@@ -112,12 +112,13 @@ export function registerGMHUDSettings() {
     }
   });
 
-  // Custom Frame File Picker
+  // Custom Frame File Picker - WORLD SCOPED with GM restriction
   game.settings.register(MODULE_ID, SETTINGS.customFrame, {
     name: "Custom Ring Frame",
     hint: "Choose a custom ring frame image for the portrait and attack circles. Leave empty to use the default frame.",
     scope: "world",
-    config: true,
+    config: game.user.isGM, // Only show in config for GMs
+    restricted: true, // Only GMs can modify this setting
     type: String,
     default: "",
     filePicker: "image",
@@ -129,12 +130,12 @@ export function registerGMHUDSettings() {
     }
   });
 
-  // Ring Frame Scale
+  // Ring Frame Scale - CLIENT SCOPED (each user can adjust their own scale)
   game.settings.register(MODULE_ID, SETTINGS.ringFrameScale, {
     name: "Ring Frame Scale",
     hint: "Adjust the size of the ring frame overlay. 0 is default size, negative values make it smaller, positive values make it larger.",
     scope: "client",
-    config: true,
+    config: game.user.isGM, // Only show in config for GMs
     type: Number,
     range: {
       min: -30,
@@ -147,12 +148,12 @@ export function registerGMHUDSettings() {
     }
   });
 
-  // Disable Ring Frames
+  // Disable Ring Frames - CLIENT SCOPED (each user can choose)
   game.settings.register(MODULE_ID, "disableRingFrames", {
     name: "Disable Ring Frames",
     hint: "Hide all ring frame overlays on portraits (useful if your tokens already have frames).",
     scope: "client",
-    config: true,
+    config: game.user.isGM, // Only show in config for GMs
     type: Boolean,
     default: false,
     onChange: (value) => {
@@ -163,12 +164,12 @@ export function registerGMHUDSettings() {
     }
   });
 
-  // Debug Mode
+  // Debug Mode - CLIENT SCOPED (each user can enable their own debug)
   game.settings.register(MODULE_ID, SETTINGS.debug, {
     name: "Debug Mode",
     hint: "Enable debug console messages for the GM HUD module.",
     scope: "client",
-    config: true,
+    config: game.user.isGM, // Only show in config for GMs
     type: Boolean,
     default: false,
     onChange: (value) => {
@@ -180,6 +181,9 @@ export function registerGMHUDSettings() {
 
   // Initialize settings on ready
   Hooks.once("ready", () => {
+    // Only initialize if user is GM
+    if (!game.user.isGM) return;
+    
     // Initialize ring frame visibility (handles both custom frames and disable setting)
     updateRingFrameVisibility();
     
