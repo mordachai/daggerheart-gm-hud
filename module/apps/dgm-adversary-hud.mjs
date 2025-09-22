@@ -252,22 +252,33 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
       return `<div class="roll-dice">${faces}</div>`;
     }).join("");
 
-    // Inline dice summary (e.g., "8+3+11+2 + 5+1")
-    const inlineDice = roll.dice.map(d => d.results.map(r => r.result).join("+")).filter(Boolean).join(" + ");
-
     // Compute modifier (sum of all flat bonuses across parts)
     const diceTotal = roll.dice.reduce((s, d) => s + (d.total ?? 0), 0);
     const mod = total - diceTotal;
-    const modSeg = mod ? ` ${mod > 0 ? "+" : "-"}${Math.abs(mod)}` : "";
+    const modInlineHTML = mod
+      ? `<span class="roll-mod-inline" style="font-family:'Cinzel',serif; font-size:20px; font-weight:700;">&nbsp;${mod > 0 ? "+" : "–"}&nbsp;${Math.abs(mod)}</span>`
+      : "";
 
-    const actorLine = `${actor.name}`;
     const attackName = atk.name ?? "Attack";
     const headerLine = `${attackName}`;
     const img = atk.img || "icons/svg/sword.svg";
 
-    const targets = Array.from(game.user?.targets ?? []);
-    const targetNames = targets.map(t => t.name).join(", ") || "<i>No current target</i>";
+    // --- damage type derivation and FA icon mapping (local to _rollDamage) ---
+    let dmgTypeKey = atk?.damageType;
+    if (!dmgTypeKey) {
+      const tset = atk?.damage?.parts?.[0]?.type;
+      if (tset && tset.size) dmgTypeKey = [...tset][0]; // first from Set
+    }
+    dmgTypeKey = (dmgTypeKey ?? "").toString().toLowerCase();
 
+    const dmgTypeIcon = ({
+      physical: "fa-solid fa-hand-fist",
+      magical : "fa-solid fa-wand-magic-sparkles",
+    })[dmgTypeKey] || "";
+
+    const dmgTypeName = dmgTypeKey
+      ? game.i18n.localize(`DAGGERHEART.CONFIG.DamageType.${dmgTypeKey}.name`)
+      : "";
 
     // --- SYSTEM-SHAPED HTML ---
     const content = `
@@ -289,7 +300,7 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
             <div class="dice-tooltip">
               <div class="wrapper">
                 <div class="roll-dice-block">
-                  ${diceFacesHTML}
+                  <div class="dgm-dice-results" style="display:flex; justify-content:center; align-items:center;">${diceFacesHTML}${modInlineHTML}</div>
                 </div>
               </div>
               <div class="roll-formula">${formula}</div>
@@ -304,8 +315,9 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
           <div class="roll-part-content">
             <div class="roll-result-container">
               <span class="roll-result-value">${total}</span>
-              <span class="roll-result-desc"></span>
-            </div>
+              <span class="roll-result-desc">
+                ${dmgTypeIcon ? `<i class="${dmgTypeIcon}" style="margin:0 8px;" title="${dmgTypeName}"></i>` : ""}
+              </span>
           </div>
         </div>
 
