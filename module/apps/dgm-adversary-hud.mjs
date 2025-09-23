@@ -35,7 +35,7 @@ function setGMPanelOpenDirection(panel) {
   // Estimate needed height: content's natural height (improved)
   const contentHeight = panel.scrollHeight || 320;
   const minRoom = 220;     // prevent jitter
-  const maxContentHeight = Math.min(window.innerHeight * 0.7, 500);
+  const maxContentHeight = Math.min(window.innerHeight * 0.5, 820);
   const need = Math.max(minRoom, Math.min(contentHeight, maxContentHeight));
   
   debugLog("Height calculations:", { 
@@ -66,7 +66,7 @@ function setGMPanelOpenDirection(panel) {
   const finalMaxHeight = Math.min(maxH, maxContentHeight);
   
   panel.style.setProperty("--dgm-panel-maxh", `${finalMaxHeight}px`);
-  panel.style.setProperty("--dgm-panel-gap", "8px");
+  panel.style.setProperty("--dgm-panel-gap", "20px");
 
   debugLog(`Panel direction set to "${dir}", max height: ${finalMaxHeight}px (space above: ${spaceAbove}, below: ${spaceBelow})`);
   debugLog("Panel data-open-dir attribute:", panel.getAttribute("data-open-dir"));

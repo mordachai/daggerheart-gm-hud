@@ -5,19 +5,44 @@
     
     {{!-- =============== TOP ROW =============== --}}
     <div class="dgm-top-row">
+
+      {{!-- CORE SECTION - Keep dgm-core class for dragging --}}
+      <div class="dgm-section dgm-section--core dgm-core">
       
-      {{!-- RESOURCES SECTION (Green - Left) --}}
-      <div class="dgm-section dgm-section--resources">
         {{!-- Reaction Roll Button --}}
         <div class="dgm-reaction-roll dgm-roll"
-             role="button"
-             tabindex="0"
-             data-action="roll-reaction"
-             title="{{l 'DAGGERHEART.GENERAL.reactionRoll'}}">
+              role="button"
+              tabindex="0"
+              data-action="roll-reaction"
+              title="{{l 'DAGGERHEART.GENERAL.reactionRoll'}}">
           <i class="fa-solid fa-reply"></i>
           {{!-- <span class="dgm-button-label">Reaction</span> --}}
         </div>
+        
+        {{!-- Portrait below --}}
+        <div class="dgm-portrait-wrapper">
+          <div class="dgm-portrait" title="{{adversaryName}} - Tier {{tier}}">
+            <img class="dgm-portrait-img" src="{{portrait}}" alt="{{adversaryName}}">
+          </div>
+        </div>
 
+        {{!-- Features Toggle on top --}}
+        <div class="dgm-features-toggle dgm-tab"
+              role="button"
+              tabindex="0"
+              data-tab="features"
+              data-action="toggle-features"
+              aria-controls="dgm-features-panel"
+              aria-expanded="false"
+              title="{{l 'DAGGERHEART.GENERAL.features'}}">
+          <span class="dgm-features-icon">F</span>
+          {{!-- <span class="dgm-features-icon">{{l 'DAGGERHEART.GENERAL.features'}}</span> --}}
+        </div>
+
+      </div>
+      
+      {{!-- RESOURCES SECTION  --}}
+      <div class="dgm-section dgm-section--resources">
         {{!-- HP Counter --}}
         <div class="dgm-count dgm-count--hp" title="{{l 'DAGGERHEART.GENERAL.HitPoints.plural'}}">
           <div class="label"><i class="fa-solid fa-heart"></i></div>
@@ -37,29 +62,7 @@
         </div>
       </div>
 
-      {{!-- CORE SECTION (Center) - Keep dgm-core class for dragging --}}
-      <div class="dgm-section dgm-section--core dgm-core">
-        {{!-- Features Toggle on top --}}
-        <div class="dgm-features-toggle dgm-tab"
-             role="button"
-             tabindex="0"
-             data-tab="features"
-             data-action="toggle-features"
-             aria-controls="dgm-features-panel"
-             aria-expanded="false"
-             title="{{l 'DAGGERHEART.GENERAL.features'}}">
-          <span class="dgm-features-icon">{{l 'DAGGERHEART.GENERAL.features'}}</span>
-        </div>
-
-        {{!-- Portrait below --}}
-        <div class="dgm-portrait-wrapper">
-          <div class="dgm-portrait" title="{{adversaryName}} - Tier {{tier}}">
-            <img class="dgm-portrait-img" src="{{portrait}}" alt="{{adversaryName}}">
-          </div>
-        </div>
-      </div>
-
-      {{!-- ATTACK SECTION (Blue - Right) --}}
+      {{!-- ATTACK SECTION --}}
       <div class="dgm-section dgm-section--attack">
         {{#if primaryAttack}}
         <div class="dgm-attack-container">
@@ -71,10 +74,7 @@
               data-attack-id="{{primaryAttack.id}}"
               title="{{l 'DAGGERHEART.GENERAL.Roll.attack'}}: {{primaryAttack.name}} ({{signed primaryAttack.bonus}})">
             <img class="dgm-attack-icon" src="{{primaryAttack.img}}" alt="{{primaryAttack.name}}">
-          </div>
-          
-          {{!-- Attack Info Container --}}
-          <div class="dgm-attack-info">
+
             {{!-- Attack Bonus - Part of attack roll --}}
             <div class="dgm-count dgm-count--attack-bonus dgm-roll" 
                 role="button"
@@ -82,33 +82,34 @@
                 data-action="roll-attack"
                 data-attack-id="{{primaryAttack.id}}"
                 title="{{l 'DAGGERHEART.ACTIONS.Settings.attackBonus'}} {{signed primaryAttack.bonus}}">
-              <div class="dgm-attack-bonus-icon"><i class="fa-solid fa-swords"></i></div>
               <div class="dgm-attack-bonus-value">{{signed primaryAttack.bonus}}</div>
             </div>
-            
-            {{!-- Range - Left-click to create template, right-click to toggle panel --}}
-            <div class="dgm-attack-details dgm-roll" 
-                role="button"
-                tabindex="0"
-                data-action="create-range-template"
-                data-range="{{primaryAttack.range}}"
-                title="{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}&#10;Left-click: Toggle template&#10;Right-click: Template options">
-              {{primaryAttack.rangeShort}}
-              <i class="fa-solid fa-bullseye" style="margin-left: 4px; opacity: 0.7;"></i>
-            </div>
-            
-            {{!-- Damage - Clickable for damage roll --}}
-            <div class="dgm-attack-damage dgm-roll" 
-                role="button"
-                tabindex="0"
-                data-action="roll-damage"
-                data-attack-id="{{primaryAttack.id}}"
-                title="{{l 'DAGGERHEART.GENERAL.damageRoll'}}:  {{formatDamage primaryAttack.damage}} {{primaryAttack.damageTypeName}}">
-              {{formatDamage primaryAttack.damage}}
-              {{#if primaryAttack.damageTypeIcon}}
-              <i class="{{primaryAttack.damageTypeIcon}}"></i>
-              {{/if}}
-            </div>
+
+
+          </div>
+
+          {{!-- Range - Left-click to create template, right-click to toggle panel --}}
+          <div class="dgm-attack-details dgm-roll" 
+              role="button"
+              tabindex="0"
+              data-action="create-range-template"
+              data-range="{{primaryAttack.range}}"
+              title="{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}&#10;Left-click: Toggle template&#10;Right-click: Template options">
+            {{primaryAttack.rangeShort}}
+            <i class="fa-solid fa-bullseye"></i>
+          </div>
+          
+          {{!-- Damage - Clickable for damage roll --}}
+          <div class="dgm-attack-details dgm-roll" 
+              role="button"
+              tabindex="0"
+              data-action="roll-damage"
+              data-attack-id="{{primaryAttack.id}}"
+              title="{{l 'DAGGERHEART.GENERAL.damageRoll'}}:  {{formatDamage primaryAttack.damage}} {{primaryAttack.damageTypeName}}">
+            {{formatDamage primaryAttack.damage}}
+            {{#if primaryAttack.damageTypeIcon}}
+            <i class="{{primaryAttack.damageTypeIcon}}"></i>
+            {{/if}}
           </div>
         </div>
         {{else}}
@@ -120,7 +121,8 @@
         </div>
         {{/if}}
       </div>
-    </div>
+
+    </div>        
 
     {{!-- =============== BOTTOM ROW =============== --}}
     {{!-- DAMAGE THRESHOLDS SECTION (Red - Bottom) --}}
@@ -133,9 +135,10 @@
         <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.severe'}}</span>
       </div>
     </div>
+
   </div>
 
-{{!-- =============== FEATURES PANEL (unchanged) =============== --}}
+  {{!-- =============== FEATURES PANEL (unchanged) =============== --}}
   <div class="dgm-tabwrap">
     <div id="dgm-features-panel" 
          class="dgm-panel dgm-panel--features" 
@@ -171,14 +174,13 @@
             <span class="dgm-section-center-title">{{l 'DAGGERHEART.GENERAL.Experience.plural'}}</span>
             {{#each experiences}}
               <div class="dgm-experience">
-                {{name}}: +{{value}} {{#if description}}<span> >> </span> {{description}}{{/if}} {{#if bonus}}({{signed bonus}}){{/if}}
+                {{name}}: +{{value}} {{#if description}}<span>: </span> {{description}}{{/if}} {{#if bonus}}({{signed bonus}}){{/if}}
               </div>
             {{/each}}
           </div>
           {{/if}}
-        </details>
+        </details>        
       </div>
-
 
       {{!-- Features List with Filter Controls --}}
       <div class="dgm-features-container">
@@ -208,7 +210,7 @@
           </div>
         </div>
 
-        <div class="dgm-divider"></div>
+        <div class="dgm-divider-center"></div>
 
         {{!-- Your existing Features List (accordion style) --}}
         <div class="dgm-features-list">
@@ -255,7 +257,7 @@
               </details>
             </li>
 
-            <div class="dgm-divider-strong"></div>
+            <div class="dgm-divider-left"></div>
 
             {{else}}
             <li class="dgm-acc-item dgm-empty">{{l "DAGGERHEART.UI.Notifications.featureIsMissing"}}</li>
@@ -267,71 +269,71 @@
     </div>
   </div>
 
-{{!-- =============== RANGE TEMPLATE PANEL =============== --}}
-<div class="dgm-tabwrap">
-  <div id="dgm-range-panel" 
-      class="dgm-panel dgm-panel--range" 
-      data-panel="range" 
-      role="dialog" 
-      aria-label="Range Template Options">
-    
-    {{!-- Panel Header --}}
-    <div class="dgm-header">
-      <header class="dgm-panel-header">
-        <div class="dgm-adversary-name">{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}</div>
-      </header>
-      <div class="dgm-divider"></div>
-    </div>
-
-    {{!-- Range Actions List --}}
-    <div class="dgm-range-actions">
+  {{!-- =============== RANGE TEMPLATE PANEL =============== --}}
+  <div class="dgm-tabwrap">
+    <div id="dgm-range-panel" 
+        class="dgm-panel dgm-panel--range" 
+        data-panel="range" 
+        role="dialog" 
+        aria-label="Range Template Options">
       
-      {{!-- Create Template Action --}}
-      {{#unless (eq primaryAttack.range "melee")}}
-      {{#unless (eq primaryAttack.range "veryfar")}}
-      <div class="dgm-range-action dgm-roll"
-          role="button"
-          tabindex="0"
-          data-action="create-range-template"
-          data-range="{{primaryAttack.range}}"
-          title="Create {{primaryAttack.rangeName}} range template">
-        <i class="fa-solid fa-bullseye"></i>
-        <span>Create {{primaryAttack.rangeName}} template</span>
-      </div>
-      {{/unless}}
-      {{/unless}}
-      
-      {{!-- Cleanup Actions --}}
-      <div class="dgm-range-action dgm-roll"
-          role="button"
-          tabindex="0"
-          data-action="cleanup-templates"
-          title="Clear templates for this token">
-        <i class="fa-solid fa-broom"></i>
-        <span>Clear template</span>
-      </div>
-      
-      <div class="dgm-range-action dgm-roll"
-          role="button"
-          tabindex="0"
-          data-action="cleanup-all-templates"
-          title="Clear all range templates in scene">
-        <i class="fa-solid fa-trash-can"></i>
-        <span>Clear all range templates</span>
+      {{!-- Panel Header --}}
+      <div class="dgm-header">
+        <header class="dgm-panel-header">
+          <div class="dgm-adversary-name">{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}</div>
+        </header>
+        <div class="dgm-divider"></div>
       </div>
 
-      {{!-- Toggle Fill Action --}}
-      <div class="dgm-range-action dgm-roll"
-          role="button"
-          tabindex="0"
-          data-action="toggle-fill"
-          title="Toggle template fill color">
-        <i class="fa-solid fa-palette"></i>
-        <span>Toggle fill</span>
-      </div>
+      {{!-- Range Actions List --}}
+      <div class="dgm-range-actions">
+        
+        {{!-- Create Template Action --}}
+        {{#unless (eq primaryAttack.range "melee")}}
+        {{#unless (eq primaryAttack.range "veryfar")}}
+        <div class="dgm-range-action dgm-roll"
+            role="button"
+            tabindex="0"
+            data-action="create-range-template"
+            data-range="{{primaryAttack.range}}"
+            title="Create {{primaryAttack.rangeName}} range template">
+          <i class="fa-solid fa-bullseye"></i>
+          <span>Create {{primaryAttack.rangeName}} template</span>
+        </div>
+        {{/unless}}
+        {{/unless}}
+        
+        {{!-- Cleanup Actions --}}
+        <div class="dgm-range-action dgm-roll"
+            role="button"
+            tabindex="0"
+            data-action="cleanup-templates"
+            title="Clear templates for this token">
+          <i class="fa-solid fa-broom"></i>
+          <span>Clear template</span>
+        </div>
+        
+        <div class="dgm-range-action dgm-roll"
+            role="button"
+            tabindex="0"
+            data-action="cleanup-all-templates"
+            title="Clear all range templates in scene">
+          <i class="fa-solid fa-trash-can"></i>
+          <span>Clear all range templates</span>
+        </div>
 
+        {{!-- Toggle Fill Action --}}
+        <div class="dgm-range-action dgm-roll"
+            role="button"
+            tabindex="0"
+            data-action="toggle-fill"
+            title="Toggle template fill color">
+          <i class="fa-solid fa-palette"></i>
+          <span>Toggle fill</span>
+        </div>
+
+      </div>
     </div>
   </div>
-</div>
 
 </section>

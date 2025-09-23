@@ -96,7 +96,7 @@ export function registerGMHUDSettings() {
   game.settings.register(MODULE_ID, SETTINGS.theme, {
     name: "GM HUD Theme",
     hint: "Choose the color theme for the GM HUD interface.",
-    scope: "client",
+    scope: "world",
     config: true, // Always show, we'll filter in the settings menu render hook
     type: String,
     choices: {
@@ -135,7 +135,7 @@ export function registerGMHUDSettings() {
   game.settings.register(MODULE_ID, SETTINGS.ringFrameScale, {
     name: "Ring Frame Scale",
     hint: "Adjust the size of the ring frame overlay. 0 is default size, negative values make it smaller, positive values make it larger.",
-    scope: "client",
+    scope: "world",
     config: true, // Always show, we'll filter in the settings menu render hook
     type: Number,
     range: {
@@ -153,7 +153,7 @@ export function registerGMHUDSettings() {
   game.settings.register(MODULE_ID, "disableRingFrames", {
     name: "Disable Ring Frames",
     hint: "Hide all ring frame overlays on portraits (useful if your tokens already have frames).",
-    scope: "client",
+    scope: "world",
     config: true, // Always show, we'll filter in the settings menu render hook
     type: Boolean,
     default: false,
@@ -169,7 +169,7 @@ export function registerGMHUDSettings() {
   game.settings.register(MODULE_ID, SETTINGS.debug, {
     name: "Debug Mode",
     hint: "Enable debug console messages for the GM HUD module.",
-    scope: "client",
+    scope: "world",
     config: true, // Always show, we'll filter in the settings menu render hook
     type: Boolean,
     default: false,
