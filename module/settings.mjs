@@ -97,7 +97,7 @@ export function registerGMHUDSettings() {
     name: "GM HUD Theme",
     hint: "Choose the color theme for the GM HUD interface.",
     scope: "client",
-    config: game.user?.isGM ?? false, // Only show in config for GMs
+    config: true, // Always show, we'll filter in the settings menu render hook
     type: String,
     choices: {
       "default": "Default",
@@ -118,7 +118,7 @@ export function registerGMHUDSettings() {
     name: "Custom Ring Frame",
     hint: "Choose a custom ring frame image for the portrait and attack circles. Leave empty to use the default frame.",
     scope: "world",
-    config: game.user?.isGM ?? false, // Only show in config for GMs
+    config: true, // Always show, we'll filter in the settings menu render hook
     restricted: true, // Only GMs can modify this setting
     type: String,
     default: "",
@@ -136,7 +136,7 @@ export function registerGMHUDSettings() {
     name: "Ring Frame Scale",
     hint: "Adjust the size of the ring frame overlay. 0 is default size, negative values make it smaller, positive values make it larger.",
     scope: "client",
-    config: game.user?.isGM ?? false, // Only show in config for GMs
+    config: true, // Always show, we'll filter in the settings menu render hook
     type: Number,
     range: {
       min: -30,
@@ -154,7 +154,7 @@ export function registerGMHUDSettings() {
     name: "Disable Ring Frames",
     hint: "Hide all ring frame overlays on portraits (useful if your tokens already have frames).",
     scope: "client",
-    config: game.user?.isGM ?? false, // Only show in config for GMs
+    config: true, // Always show, we'll filter in the settings menu render hook
     type: Boolean,
     default: false,
     onChange: (value) => {
@@ -170,7 +170,7 @@ export function registerGMHUDSettings() {
     name: "Debug Mode",
     hint: "Enable debug console messages for the GM HUD module.",
     scope: "client",
-    config: game.user?.isGM ?? false, // Only show in config for GMs
+    config: true, // Always show, we'll filter in the settings menu render hook
     type: Boolean,
     default: false,
     onChange: (value) => {
@@ -208,6 +208,32 @@ export function registerGMHUDSettings() {
         });
       } else {
         debugLog("Ring frame scale slider not found");
+      }
+    });
+  });
+
+  // Hide GM HUD settings from non-GM users
+  Hooks.on("renderSettingsConfig", (app, html) => {
+    // Only hide settings if user is not GM
+    if (game.user?.isGM) return;
+    
+    // Convert html to jQuery object if it isn't already
+    const $html = html instanceof jQuery ? html : $(html);
+    
+    // Hide all GM HUD settings for non-GM users
+    const gmHudSettings = [
+      `${MODULE_ID}.${SETTINGS.theme}`,
+      `${MODULE_ID}.${SETTINGS.customFrame}`,
+      `${MODULE_ID}.${SETTINGS.ringFrameScale}`,
+      `${MODULE_ID}.disableRingFrames`,
+      `${MODULE_ID}.${SETTINGS.debug}`
+    ];
+    
+    gmHudSettings.forEach(settingName => {
+      const settingElement = $html.find(`[name="${settingName}"]`).closest('.form-group');
+      if (settingElement.length) {
+        settingElement.hide();
+        console.log(`[GM HUD] Hidden setting from player: ${settingName}`);
       }
     });
   });
