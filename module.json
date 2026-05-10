@@ -2,11 +2,23 @@
   "id": "daggerheart-gm-hud",
   "title": "Daggerheart GM HUD",
   "description": "GM-focused HUD for managing adversaries in the Daggerheart system.",
-  "version": "1.5.1",
-  "compatibility": { "minimum": "13", "verified": "14" },
-  "authors": [{ "name": "Gus" }],
-  "esmodules": ["module/daggerheart-gm-hud.mjs"],
-  "styles": ["styles/dgm-hud.css", "styles/dgm-themes.css"],
+  "version": "1.6.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "authors": [
+    {
+      "name": "Gus"
+    }
+  ],
+  "esmodules": [
+    "module/daggerheart-gm-hud.mjs"
+  ],
+  "styles": [
+    "styles/dgm-hud.css",
+    "styles/dgm-themes.css"
+  ],
   "relationships": {
     "systems": [
       {
@@ -18,11 +30,18 @@
   },
   "url": "https://github.com/mordachai/daggerheart-gm-hud",
   "manifest": "https://github.com/mordachai/daggerheart-gm-hud/releases/latest/download/module.json",
-  "download": "https://github.com/mordachai/daggerheart-gm-hud/releases/latest/download/module.zip",
+  "download": "https://github.com/mordachai/daggerheart-gm-hud/releases/download/v1.6.0/daggerheart-gm-hud.zip",
   "flags": {
     "hotReload": {
-      "extensions": ["css", "hbs", "json"],
-      "paths": ["templates", "styles"]
+      "extensions": [
+        "css",
+        "hbs",
+        "json"
+      ],
+      "paths": [
+        "templates",
+        "styles"
+      ]
     }
   }
 }
