@@ -53,7 +53,7 @@ jobs:
 
       - name: Build zip
         run: |
-          zip -r daggerheart-gm-hud.zip \
+          zip -r module.zip \
             module.json \
             module/ \
             styles/ \
