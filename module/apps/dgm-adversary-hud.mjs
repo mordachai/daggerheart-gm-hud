@@ -357,65 +357,55 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
   }
 
   async _createRangeTemplate(range) {
-  if (!canvas?.ready || !canvas.scene) return;
+    if (!canvas?.ready || !canvas.scene) return;
 
-  const squaresByRange = {
-    melee: 1,       // skipped
-    veryclose: 3,
-    close: 6,
-    far: 12,
-    veryfar: 13     // skipped
-  };
+    const squaresByRange = {
+      melee: 1,       // skipped
+      veryclose: 3,
+      close: 6,
+      far: 12,
+      veryfar: 13     // skipped
+    };
 
-  const r = String(range ?? "").toLowerCase().trim();
-  const squares = squaresByRange[r];
-  if (!squares || r === "melee" || r === "veryfar") return;
+    const r = String(range ?? "").toLowerCase().trim();
+    const squares = squaresByRange[r];
+    if (!squares || r === "melee" || r === "veryfar") return;
 
-  const tok = this.token ?? canvas.tokens.controlled[0];
-  if (!tok) return;
+    const tok = this.token ?? canvas.tokens.controlled[0];
+    if (!tok) return;
 
-  await this._cleanupExistingTemplates(tok);
+    await this._cleanupExistingTemplates(tok);
 
-  const unitsPerSquare = canvas.scene.grid.distance ?? 5;
-  const distanceUnits  = squares * unitsPerSquare;
+    const unitsPerSquare = canvas.scene.grid.distance ?? 5;
+    const distanceUnits  = squares * unitsPerSquare;
+    const tokenId = tok.document?.id ?? tok.id;
 
-  const center = tok.center ?? {
-    x: (tok.document?.x ?? tok.x) + ((tok.document?.width ?? tok.w ?? 1) * canvas.grid.size) / 2,
-    y: (tok.document?.y ?? tok.y) + ((tok.document?.height ?? tok.h ?? 1) * canvas.grid.size) / 2
-  };
-
-  const data = {
-    t: "circle",
-    x: center.x,
-    y: center.y,
-    distance: distanceUnits,
-    direction: 0,
-    angle: 0,
-    width: 0,
-    elevation: tok.document?.elevation ?? tok.elevation ?? 0,
-    borderColor: "#FF6B35",
-    fillColor: this.showFill ? game.user.color : "#00000000",
-    texture: "",
-    hidden: false,
-    flags: {
-      "daggerheart-gm-hud": {
-        range,
-        squares,
-        unitsPerSquare,
-        distanceUnits,
-        actorId: this.actor?.id,
-        tokenId: tok.id ?? tok.document?.id,
-        createdAt: Date.now(),
-        hudInstance: this.id || "default"
+    return RegionDocument.createTokenEmanation(
+      tok.document,
+      distanceUnits,
+      {
+        name: `[GM HUD] ${range}`,
+        color: this.showFill ? game.user.color.css ?? game.user.color : "#FF6B35",
+        visibility: CONST.REGION_VISIBILITY.GAMEMASTER,
+        highlightMode: "shapes",
+        displayMeasurements: false,
+        hidden: false,
+        locked: false,
+        flags: {
+          "daggerheart-gm-hud": {
+            range,
+            squares,
+            unitsPerSquare,
+            distanceUnits,
+            actorId: this.actor?.id,
+            tokenId,
+            createdAt: Date.now(),
+            hudInstance: this.id || "default"
+          }
+        }
       }
-    },
-    author: game.user.id
-  };
-
-  const [doc] = await canvas.scene.createEmbeddedDocuments("MeasuredTemplate", [data]);
-  
-  return canvas.templates.get(doc?.id ?? "");
-}
+    );
+  }
 
   async _cleanupExistingTemplates(token) {
     if (!canvas?.scene || !token) return;
@@ -423,23 +413,17 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     try {
       const tokenId = token.id ?? token.document?.id;
       const actorId = this.actor?.id;
-      
-      // Find templates created by this HUD for this token/actor
-      const templatesToDelete = canvas.scene.templates.filter(template => {
-        const flags = template.flags?.["daggerheart-gm-hud"];
-        if (!flags) return false;
-        
-        // Match by token ID or actor ID
-        return (flags.tokenId === tokenId) || (flags.actorId === actorId);
-      });
 
-      if (templatesToDelete.length > 0) {
-        const templateIds = templatesToDelete.map(t => t.id);
-        await canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", templateIds);
-      }
+      const toDelete = canvas.scene.regions.filter(r => {
+        const flags = r.flags?.["daggerheart-gm-hud"];
+        if (!flags) return false;
+        return (flags.tokenId === tokenId) || (flags.actorId === actorId);
+      }).map(r => r.id);
+
+      if (toDelete.length) await canvas.scene.deleteEmbeddedDocuments("Region", toDelete);
     } catch (err) {
-      console.error("[GM HUD] Template cleanup failed:", err);
-      ui.notifications?.error("Template cleanup failed (see console)");
+      console.error("[GM HUD] Region cleanup failed:", err);
+      ui.notifications?.error("Region cleanup failed (see console)");
     }
   }
 
@@ -447,47 +431,41 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     if (!canvas?.scene) return;
 
     try {
-      const templatesToDelete = canvas.scene.templates.filter(template => {
-        return template.flags?.["daggerheart-gm-hud"];
-      });
+      const toDelete = canvas.scene.regions
+        .filter(r => r.flags?.["daggerheart-gm-hud"])
+        .map(r => r.id);
 
-      if (templatesToDelete.length > 0) {
-        const templateIds = templatesToDelete.map(t => t.id);
-        await canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", templateIds);
-      }
+      if (toDelete.length) await canvas.scene.deleteEmbeddedDocuments("Region", toDelete);
     } catch (err) {
-      console.error("[GM HUD] Full cleanup failed:", err);
-      ui.notifications?.error("Template cleanup failed (see console)");
+      console.error("[GM HUD] Full region cleanup failed:", err);
+      ui.notifications?.error("Region cleanup failed (see console)");
     }
   }
 
   _hasTemplateForRange(token, range) {
     if (!canvas?.scene || !token) return false;
-    
+
     const tokenId = token.id ?? token.document?.id;
-    return canvas.scene.templates.some(template => {
-      const flags = template.flags?.["daggerheart-gm-hud"];
+    return canvas.scene.regions.some(r => {
+      const flags = r.flags?.["daggerheart-gm-hud"];
       return flags && flags.tokenId === tokenId && flags.range === range;
     });
   }
 
   async _cleanupRangeTemplate(token, range) {
     if (!canvas?.scene || !token) return;
-    
+
     try {
       const tokenId = token.id ?? token.document?.id;
-      const templatesToDelete = canvas.scene.templates.filter(template => {
-        const flags = template.flags?.["daggerheart-gm-hud"];
+      const toDelete = canvas.scene.regions.filter(r => {
+        const flags = r.flags?.["daggerheart-gm-hud"];
         return flags && flags.tokenId === tokenId && flags.range === range;
-      });
+      }).map(r => r.id);
 
-      if (templatesToDelete.length > 0) {
-        const templateIds = templatesToDelete.map(t => t.id);
-        await canvas.scene.deleteEmbeddedDocuments("MeasuredTemplate", templateIds);
-      }
+      if (toDelete.length) await canvas.scene.deleteEmbeddedDocuments("Region", toDelete);
     } catch (err) {
-      console.error("[GM HUD] Range template cleanup failed:", err);
-      ui.notifications?.error("Range template cleanup failed");
+      console.error("[GM HUD] Range region cleanup failed:", err);
+      ui.notifications?.error("Range region cleanup failed");
     }
   }
 
@@ -512,41 +490,6 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
     }
   }
 
-  static onUpdateToken(tokenDocument, changes) {
-    // Only proceed if position changed
-    if (!('x' in changes || 'y' in changes)) return;
-    
-    try {
-      // Find templates for this token
-      const tokenId = tokenDocument.id;
-      const templatesToUpdate = canvas.scene.templates.filter(template => {
-        const flags = template.flags?.["daggerheart-gm-hud"];
-        return flags && flags.tokenId === tokenId;
-      });
-
-      if (templatesToUpdate.length === 0) return;
-
-      // Calculate new center position
-      const token = canvas.tokens.get(tokenId);
-      if (!token) return;
-
-      const newCenter = {
-        x: (changes.x ?? token.x) + (token.w / 2),
-        y: (changes.y ?? token.y) + (token.h / 2)
-      };
-
-      // Update template positions
-      const updates = templatesToUpdate.map(template => ({
-        _id: template.id,
-        x: newCenter.x,
-        y: newCenter.y
-      }));
-
-      canvas.scene.updateEmbeddedDocuments("MeasuredTemplate", updates);
-    } catch (err) {
-      console.error("[GM HUD] Token update failed:", err);
-    }
-  }
 
   _bindDelegatedEvents() {
       const rootEl = this.element;
@@ -685,33 +628,27 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
           return;
         }
 
-        // Toggle fill color (add this case in your existing click handler)
+        // Toggle fill color
         const toggleFill = ev.target.closest("[data-action='toggle-fill']");
         if (toggleFill) {
           stop(ev);
           const newValue = !this.showFill;
           await this.setShowFill(newValue);
-          
-          // Update existing templates
+
+          // Update color on existing range regions
           const token = this.token ?? canvas.tokens.controlled[0];
-          if (token) {
+          if (token && canvas?.scene) {
             const tokenId = token.id ?? token.document?.id;
-            const templatesToUpdate = canvas.scene.templates.filter(template => {
-              const flags = template.flags?.["daggerheart-gm-hud"];
+            const regions = canvas.scene.regions.filter(r => {
+              const flags = r.flags?.["daggerheart-gm-hud"];
               return flags && flags.tokenId === tokenId;
             });
-
-            if (templatesToUpdate.length > 0) {
-              const updates = templatesToUpdate.map(template => ({
-                _id: template.id,
-                fillColor: newValue ? game.user.color : "#00000000"
-              }));
-              
-              canvas.scene.updateEmbeddedDocuments("MeasuredTemplate", updates);
+            if (regions.length) {
+              const color = newValue ? (game.user.color.css ?? game.user.color) : "#FF6B35";
+              await canvas.scene.updateEmbeddedDocuments("Region", regions.map(r => ({_id: r.id, color})));
             }
           }
-          
-          // Update button appearance
+
           toggleFill.classList.toggle('active', newValue);
           return;
         }

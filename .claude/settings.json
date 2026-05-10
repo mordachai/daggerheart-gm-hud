@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud remote -v)",
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud log --oneline -5)"
+    ]
+  }
+}
