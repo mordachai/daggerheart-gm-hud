@@ -148,7 +148,7 @@
       
       {{!-- Panel Header --}}
       <div class="dgm-header">
-        <details>
+        <details data-sync>
           <summary>
             <header class="dgm-panel-header">
               <div class="dgm-adversary-name">{{adversaryName}}</div>
@@ -217,7 +217,7 @@
           <ul class="dgm-acc">
             {{#each features}}
             <li class="dgm-acc-item" data-has-actions="{{hasActions}}">
-              <details>
+              <details data-sync>
                 <summary>
                   {{!-- Feature Icon (clickable if has actions) --}}
                   <img class="dgm-feature-icon{{#if hasActions}} clickable{{/if}}"

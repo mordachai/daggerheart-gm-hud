@@ -378,10 +378,12 @@ export class DaggerheartGMHUD extends HandlebarsApplicationMixin(ApplicationV2) 
 
     const unitsPerSquare = canvas.scene.grid.distance ?? 5;
     const distanceUnits  = squares * unitsPerSquare;
-    const tokenId = tok.document?.id ?? tok.id;
+    // this.token may be a TokenDocument or a Token placeable; resolve to the document
+    const tokenDoc = tok.document ?? tok;
+    const tokenId = tokenDoc.id;
 
     return RegionDocument.createTokenEmanation(
-      tok.document,
+      tokenDoc,
       distanceUnits,
       {
         name: `[GM HUD] ${range}`,

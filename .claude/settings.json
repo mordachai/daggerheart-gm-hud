@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud remote -v)",
-      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud log --oneline -5)"
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud log --oneline -5)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Foundry version:', d.get\\('version'\\)\\); print\\('build:', d.get\\('build', 'N/A'\\)\\)\")",
+      "Read(//mnt/arch-home/gus/foundry/data/v14/Data/systems/daggerheart/build/**)",
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud log --oneline --all)",
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud show HEAD~3:module/settings.mjs)",
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud log --all --oneline --name-only)",
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud show 7282d98:module/settings.mjs)",
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud show 3c6c4d5:module/settings.mjs)",
+      "Bash(git -C /mnt/arch-home/gus/foundry/data/v14/Data/modules/daggerheart-gm-hud log --all --full-history -- module/settings.mjs)"
     ]
   }
 }
