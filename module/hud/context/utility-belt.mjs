@@ -29,7 +29,7 @@ export function collectUtilityBelt(app, features) {
     };
   });
 
-  return { utilityBelt: { slots, slotCount: ids.length } };
+  return { utilityBelt: { slots, slotCount: ids.length, canAddSlot: ids.length < features.length } };
 }
 
 /** Persist the current slot -> feature id list (null for empty slots); array length IS the slot count. */

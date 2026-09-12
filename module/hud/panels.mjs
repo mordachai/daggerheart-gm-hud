@@ -99,6 +99,8 @@ export function reapplyStoredFilter(app) {
 
 export function toggleFeaturesPanel(app) {
   const rootEl = app.element;
+  if (!rootEl) return;
+
   const shell = rootEl.querySelector(".dgm-hud");
   const isOpen = shell?.getAttribute("data-open") === "features";
   const newState = isOpen ? "" : "features";

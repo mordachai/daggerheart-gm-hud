@@ -57,6 +57,8 @@ export function updateRangeButtonState(button, range, token) {
 }
 
 export function updateAllRangeButtonStates(app) {
+  if (!app.element) return;
+
   const token = app.token ?? canvas.tokens.controlled[0];
 
   app.element.querySelectorAll('[data-action="create-range-template"]').forEach(button => {

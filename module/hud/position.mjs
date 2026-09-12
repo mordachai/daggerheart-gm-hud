@@ -56,6 +56,8 @@ const INTERACTIVE_SELECTOR = [
 
 export function enableDragging(app) {
   const root = app.element;
+  if (!root) return;
+
   const handle = root.querySelector(".dgm-container");
   if (!handle) return;
 

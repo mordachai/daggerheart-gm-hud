@@ -33,6 +33,8 @@ export function showContextMenu(app) {
   syncLockMenuItem(app);
   syncThemeMenuItem(app);
 
+  if (!app.element) return;
+
   const menu = app.element.querySelector("#dgm-context-menu");
   const portrait = app.element.querySelector(".dgm-portrait");
   const core = app.element.querySelector(".dgm-core");
@@ -84,6 +86,8 @@ export function showContextMenu(app) {
 
 /** Position + show the condition grid. */
 export function showStatusGrid(app) {
+  if (!app.element) return;
+
   const grid = app.element.querySelector("#dgm-status-grid");
   const core = app.element.querySelector(".dgm-core");
   if (!grid || !core) return;
@@ -144,17 +148,39 @@ export function hideStatusGrid(app) {
 
 const TOOLTIP_VARIANTS = ["dgm-tooltip--belt"];
 
+/** Cancel a pending scheduleHideTooltip() without touching the tooltip's current visibility. */
+export function cancelTooltipHide(app) {
+  if (app._tooltipHideTimer) {
+    clearTimeout(app._tooltipHideTimer);
+    app._tooltipHideTimer = null;
+  }
+}
+
 export function hideTooltip(app) {
+  cancelTooltipHide(app);
   const tooltip = app.element?.querySelector("#dgm-tooltip");
   if (tooltip) tooltip.classList.remove("show");
 }
 
+/** Hide after a short delay, cancellable via cancelTooltipHide() - lets the pointer travel from
+ *  the trigger element into the tooltip itself (e.g. to click a button inside it) without it
+ *  disappearing mid-transit. */
+export function scheduleHideTooltip(app, delay = 150) {
+  cancelTooltipHide(app);
+  app._tooltipHideTimer = setTimeout(() => {
+    app._tooltipHideTimer = null;
+    const tooltip = app.element?.querySelector("#dgm-tooltip");
+    if (tooltip) tooltip.classList.remove("show");
+  }, delay);
+}
+
 const TOOLTIP_GAP = 10;
 
-export function showTooltip(app, targetEl, text, { wrap = false, variant = null } = {}) {
-  const tooltip = app.element.querySelector("#dgm-tooltip");
-  if (!tooltip || !text || !targetEl) return;
-  tooltip.textContent = text;
+export function showTooltip(app, targetEl, content, { wrap = false, variant = null, html = false } = {}) {
+  const tooltip = app.element?.querySelector("#dgm-tooltip");
+  if (!tooltip || !content || !targetEl) return;
+  cancelTooltipHide(app);
+  if (html) tooltip.innerHTML = content; else tooltip.textContent = content;
   tooltip.classList.toggle("dgm-tooltip--wrap", wrap);
   tooltip.classList.remove(...TOOLTIP_VARIANTS);
   if (variant) tooltip.classList.add(`dgm-tooltip--${variant}`);

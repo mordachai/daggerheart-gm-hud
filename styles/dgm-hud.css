@@ -1040,7 +1040,8 @@ html.dgm-wide-features .dgm-divider-left {
 
 .dgm-feature-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  justify-content: space-between;
   gap: 6px;
   margin-top: 8px;
 }
@@ -1048,6 +1049,9 @@ html.dgm-wide-features .dgm-divider-left {
 .dgm-feature-action-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
   gap: 6px;
   background: var(--dgm-accent);
   color: var(--dgm-accent-ink);
@@ -1062,6 +1066,12 @@ html.dgm-wide-features .dgm-divider-left {
 
 .dgm-feature-action-btn:hover {
   filter: brightness(1.1);
+}
+
+.dgm-feature-action-btn span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .dgm-feature-action-btn i {
@@ -1319,11 +1329,41 @@ html.dgm-wide-features .dgm-divider-left {
   opacity: 1;
 }
 
+.dgm-tooltip--belt.show {
+  pointer-events: auto;
+}
+
 .dgm-tooltip--wrap {
   white-space: normal;
   max-width: 240px;
   border: 1px solid var(--dgm-border);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.dgm-tooltip-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--dgm-accent);
+  margin-bottom: 4px;
+}
+
+.dgm-tooltip-fear-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+  color: var(--dgm-text);
+}
+
+.dgm-tooltip-desc {
+  white-space: normal;
+}
+
+.dgm-tooltip-actions {
+  margin-top: 6px;
 }
 
 .dgm-tooltip--belt {

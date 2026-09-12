@@ -19,6 +19,29 @@ function resolveActionIcon(action) {
   return icon || "fa-bolt";
 }
 
+/** Total Fear cost across a feature's actions (0 if none of them spend Fear). */
+export function getFeatureFearCost(item) {
+  const actions = item?.system?.actionsList ?? [];
+  let total = 0;
+  for (const action of actions) {
+    for (const cost of action.cost ?? []) {
+      if (cost.key === "fear") total += Number(cost.value) || 0;
+    }
+  }
+  return total;
+}
+
+/** {id, name, icon} per usable action on a feature item - shared by the accordion and the belt tooltip. */
+export function buildFeatureActions(item) {
+  return (item?.system?.actionsList ?? [])
+    .filter(action => action.id)
+    .map(action => ({
+      id: action.id,
+      name: action.name || game.i18n.localize(`DAGGERHEART.ACTIONS.TYPES.${action.type}.name`),
+      icon: resolveActionIcon(action)
+    }));
+}
+
 export async function collectFeatures(app) {
   const featureItems = app.actor.items
     .filter(item => item.type === "feature")
@@ -32,13 +55,7 @@ export async function collectFeatures(app) {
       const featureForm = item.system?.featureForm || "";
       const featureFormKey = featureForm ? CONFIG.DH?.ITEM?.featureForm?.[featureForm] : null;
 
-      const actions = (item.system?.actionsList ?? [])
-        .filter(action => action.id)
-        .map(action => ({
-          id: action.id,
-          name: action.name || game.i18n.localize(`DAGGERHEART.ACTIONS.TYPES.${action.type}.name`),
-          icon: resolveActionIcon(action)
-        }));
+      const actions = buildFeatureActions(item);
 
       return {
         id: item.id,

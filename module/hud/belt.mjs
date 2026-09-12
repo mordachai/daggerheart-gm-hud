@@ -4,7 +4,8 @@ import { debugLog } from "../settings.mjs";
 import { saveUtilityBelt } from "./context/utility-belt.mjs";
 import { toggleFeaturesPanel } from "./panels.mjs";
 import { featureHasActions } from "../system/items.mjs";
-import { showTooltip, hideTooltip } from "./status-menu.mjs";
+import { buildFeatureActions, getFeatureFearCost } from "./context/features.mjs";
+import { showTooltip, hideTooltip, scheduleHideTooltip, cancelTooltipHide } from "./status-menu.mjs";
 
 function readSlotIds(rootEl) {
   const slotEls = [...rootEl.querySelectorAll(".dgm-belt-slot")]
@@ -23,6 +24,37 @@ function parseDragPayload(ev) {
 
 function closestDropZone(ev) {
   return ev.target.closest(".dgm-belt-slot, .dgm-belt-add");
+}
+
+/** Name + description + (if any) action buttons - same buttons/handler as the features accordion. */
+function buildBeltTooltipHTML(app, slot) {
+  const esc = foundry.utils.escapeHTML;
+  const name = slot.dataset.name || "";
+  const description = slot.dataset.description || "";
+  const featureId = slot.dataset.featureId;
+
+  const item = app.actor?.items.get(featureId);
+  const actions = item ? buildFeatureActions(item) : [];
+  const fearCost = item ? getFeatureFearCost(item) : 0;
+  const fearCostHTML = fearCost > 0
+    ? `<span class="dgm-tooltip-fear-cost"><i class="fa-solid fa-skull"></i>${fearCost}</span>`
+    : "";
+
+  let html = `<div class="dgm-tooltip-title"><span>${esc(name)}</span>${fearCostHTML}</div>`;
+  if (description) html += `<div class="dgm-tooltip-desc">${esc(description)}</div>`;
+  if (actions.length) {
+    html += `<div class="dgm-feature-actions dgm-tooltip-actions">`;
+    for (const action of actions) {
+      html += `<button type="button" class="dgm-feature-action-btn"
+                       data-action="feature-action-use"
+                       data-feature-id="${featureId}"
+                       data-action-id="${action.id}">
+                 <i class="fa-solid ${action.icon}"></i><span>${esc(action.name)}</span>
+               </button>`;
+    }
+    html += `</div>`;
+  }
+  return html;
 }
 
 /** Re-render the HUD and restore the features panel's open state (a fresh render always closes it). */
@@ -86,11 +118,22 @@ export function attachBeltEvents(app) {
 
   rootEl.addEventListener("mouseover", (ev) => {
     const slot = ev.target.closest(".dgm-belt-slot.filled");
-    if (slot) showTooltip(app, slot, slot.dataset.description || slot.dataset.name, { wrap: true, variant: "belt" });
+    if (slot) {
+      showTooltip(app, slot, buildBeltTooltipHTML(app, slot), { wrap: true, variant: "belt", html: true });
+      return;
+    }
+    // Pointer moved into the bubble itself (e.g. to click an action button) - keep it open.
+    if (ev.target.closest("#dgm-tooltip.dgm-tooltip--belt")) cancelTooltipHide(app);
   });
 
   rootEl.addEventListener("mouseout", (ev) => {
-    if (ev.target.closest(".dgm-belt-slot.filled")) hideTooltip(app);
+    const leavingSlot = ev.target.closest(".dgm-belt-slot.filled");
+    const leavingTooltip = ev.target.closest("#dgm-tooltip.dgm-tooltip--belt");
+    if (!leavingSlot && !leavingTooltip) return;
+
+    const to = ev.relatedTarget;
+    if (to?.closest?.(".dgm-belt-slot.filled") || to?.closest?.("#dgm-tooltip.dgm-tooltip--belt")) return;
+    scheduleHideTooltip(app);
   });
 
   rootEl.addEventListener("dragstart", (ev) => {

@@ -30,7 +30,7 @@ const EMPTY_CONTEXT = {
 export async function buildContext(app) {
   debugLog("Preparing context for actor:", app.actor?.name);
 
-  if (!app.actor) return { ...EMPTY_CONTEXT, ...collectFear(), utilityBelt: { slots: [], slotCount: 0 } };
+  if (!app.actor) return { ...EMPTY_CONTEXT, ...collectFear(), utilityBelt: { slots: [], slotCount: 0, canAddSlot: false } };
 
   const { features } = await collectFeatures(app);
 
