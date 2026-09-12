@@ -193,33 +193,6 @@ export function registerDHUDHelpers() {
     }
   });
 
-  // ---- Adversary-specific helpers ----
-  Hb.registerHelper("formatDamage", function(damageData) {
-    if (!damageData?.parts?.length) return "—";
-    
-    const part = damageData.parts[0];
-    const value = part.value;
-    if (!value) return "—";
-    
-    const dice = value.dice || "d6";
-    const multiplier = value.flatMultiplier || 1;
-    const bonus = value.bonus || 0;
-    
-    let formula = multiplier > 1 ? `${multiplier}${dice}` : dice;
-    if (bonus > 0) formula += `+${bonus}`;
-    else if (bonus < 0) formula += `${bonus}`;
-    
-    return formula;
-  });
-
-  Hb.registerHelper("extractDamageTypes", function(damageData) {
-    if (!damageData?.parts?.length) return "";
-    
-    const types = damageData.parts[0].type || [];
-    return Array.isArray(types) ? types.join(", ") : String(types);
-  });
-
-
 // ---- String/text helpers ----
 Hb.registerHelper("truncate", function(str, length = 50) {
   if (!str || str.length <= length) return str;

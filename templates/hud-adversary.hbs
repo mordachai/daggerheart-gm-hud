@@ -2,7 +2,31 @@
   
   {{!-- =============== MAIN CONTAINER =============== --}}
   <div class="dgm-container">
-    
+
+    {{!-- =============== UTILITY BELT =============== --}}
+    <div class="dgm-section dgm-section--belt">
+      <div class="dgm-belt" role="toolbar" aria-label="Utility belt">
+        {{#each utilityBelt.slots}}
+        <div class="dgm-belt-slot{{#if id}} filled{{/if}}"
+             data-slot-index="{{index}}"
+             data-feature-id="{{id}}"
+             data-name="{{name}}"
+             data-description="{{description}}"
+             draggable="{{#if id}}true{{else}}false{{/if}}"
+             role="button"
+             tabindex="0"
+             {{#unless id}}title="Empty slot — right-click to remove"{{/unless}}>
+          {{#if img}}
+          <img class="dgm-belt-slot-icon" src="{{img}}" alt="{{name}}">
+          {{/if}}
+        </div>
+        {{/each}}
+        <div class="dgm-belt-add" role="button" tabindex="0" title="Add slot">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+      </div>
+    </div>
+
     {{!-- =============== TOP ROW =============== --}}
     <div class="dgm-top-row">
 
@@ -18,7 +42,17 @@
           <i class="fa-solid fa-reply"></i>
           {{!-- <span class="dgm-button-label">Reaction</span> --}}
         </div>
-        
+
+        {{!-- Fear - Left-click: spend, Right-click: gain --}}
+        <div class="dgm-fear dgm-roll"
+              role="button"
+              tabindex="0"
+              data-action="fear-adjust"
+              title="{{l 'DAGGERHEART.GENERAL.fear'}}: {{fear}}&#10;Left-click: Spend Fear&#10;Right-click: Gain Fear">
+          <i class="fa-solid fa-skull"></i>
+          <span class="dgm-fear-value">{{fear}}</span>
+        </div>
+
         {{!-- Portrait below --}}
         <div class="dgm-portrait-wrapper">
           <div class="dgm-portrait" title="{{adversaryName}} - Tier {{tier}}">
@@ -88,30 +122,28 @@
 
           </div>
 
-          {{!-- Range - Left-click to create template, right-click to toggle panel --}}
-          <div class="dgm-attack-details dgm-roll" 
+          {{!-- Range - click to toggle Daggerheart: Distances rings for this token --}}
+          <div class="dgm-attack-details dgm-roll"
               role="button"
               tabindex="0"
               data-action="create-range-template"
               data-range="{{primaryAttack.range}}"
-              title="{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}&#10;Left-click: Toggle template&#10;Right-click: Template options">
+              title="{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}&#10;Click: Toggle distance rings">
             {{primaryAttack.rangeShort}}
             <i class="fa-solid fa-bullseye"></i>
           </div>
-          
-          {{!-- Damage - Clickable for damage roll --}}
-          <div class="dgm-attack-details dgm-roll" 
-              role="button"
-              tabindex="0"
-              data-action="roll-damage"
-              data-attack-id="{{primaryAttack.id}}"
-              title="{{l 'DAGGERHEART.GENERAL.damageRoll'}}:  {{formatDamage primaryAttack.damage}} {{primaryAttack.damageTypeName}}">
-            {{formatDamage primaryAttack.damage}}
-            {{#if primaryAttack.damageTypeIcon}}
-            <i class="{{primaryAttack.damageTypeIcon}}"></i>
-            {{/if}}
-          </div>
+
         </div>
+
+        {{!-- Damage - display only, formula comes straight from the system --}}
+        {{#if primaryAttack.damage}}
+        <div class="dgm-attack-damage" title="{{l 'DAGGERHEART.GENERAL.damage'}}: {{primaryAttack.damage}}">
+          <span class="dgm-attack-damage-value">{{primaryAttack.damage}}</span>
+          {{#each primaryAttack.damageIcons}}
+          <i class="fa-solid {{icon}}" title="{{label}}"></i>
+          {{/each}}
+        </div>
+        {{/if}}
         {{else}}
         <div class="dgm-attack" title="No attack available">
           <img class="dgm-attack-icon" src="icons/svg/sword.svg" alt="No attack">
@@ -133,6 +165,10 @@
         <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.major'}}</span>
         <span class="dgm-threshold-val">{{thresholds.severe}}</span>
         <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.severe'}}</span>
+        {{#if thresholds.massive}}
+        <span class="dgm-threshold-val">{{thresholds.massive}}</span>
+        <span class="dgm-threshold-chip">{{l 'DAGGERHEART.GENERAL.Damage.massive'}}</span>
+        {{/if}}
       </div>
     </div>
 
@@ -155,6 +191,7 @@
               <div class="dgm-pills-container">
               {{#if tier}}<span class="dgm-adversary-pills">{{l 'DAGGERHEART.GENERAL.Tiers.singular'}} {{tier}}</span>{{/if}}
               {{#if systemType.label}}<span class="dgm-adversary-pills" title="{{systemType.description}}">{{systemType.label}}</span>{{/if}}
+              {{#if size.label}}<span class="dgm-adversary-pills dgm-adversary-pills--size">{{size.label}}</span>{{/if}}
               </div>
             </header>
           </summary>
@@ -169,17 +206,17 @@
             {{{motivesAndTactics}}}
           </div>
           {{/if}}
-          {{#if experiences}}
-          <div class="dgm-section-content">
-            <span class="dgm-section-center-title">{{l 'DAGGERHEART.GENERAL.Experience.plural'}}</span>
-            {{#each experiences}}
-              <div class="dgm-experience">
-                {{name}}: +{{value}} {{#if description}}<span>: </span> {{description}}{{/if}} {{#if bonus}}({{signed bonus}}){{/if}}
-              </div>
-            {{/each}}
-          </div>
-          {{/if}}
-        </details>        
+        </details>
+        {{#if experiences}}
+        <div class="dgm-section-content dgm-experiences-always">
+          <span class="dgm-section-center-title">{{l 'DAGGERHEART.GENERAL.Experience.plural'}}</span>
+          {{#each experiences}}
+            <div class="dgm-experience">
+              {{name}}: +{{value}} {{#if description}}<span>: </span> {{description}}{{/if}} {{#if bonus}}({{signed bonus}}){{/if}}
+            </div>
+          {{/each}}
+        </div>
+        {{/if}}
       </div>
 
       {{!-- Features List with Filter Controls --}}
@@ -216,7 +253,7 @@
         <div class="dgm-features-list">
           <ul class="dgm-acc">
             {{#each features}}
-            <li class="dgm-acc-item" data-has-actions="{{hasActions}}">
+            <li class="dgm-acc-item" data-has-actions="{{hasActions}}" data-feature-id="{{id}}" draggable="true">
               <details data-sync>
                 <summary>
                   {{!-- Feature Icon (clickable if has actions) --}}
@@ -229,8 +266,16 @@
                       data-feature-id="{{id}}"
                       title="{{name}}">
 
-                  {{!-- Feature Name --}}
-                  <span class="dgm-feature-name">{{truncate name 25}}</span>
+                  {{!-- Feature Name + Form Badge (stacked) --}}
+                  <span class="dgm-feature-title">
+                    <span class="dgm-feature-name">{{truncate name 25}}</span>
+                    {{#if featureFormLabel}}
+                    <span class="dgm-feature-form-badge">
+                      {{#if featureFormIcon}}<i class="fa-solid {{featureFormIcon}}"></i>{{/if}}
+                      {{featureFormLabel}}
+                    </span>
+                    {{/if}}
+                  </span>
 
                   {{!-- Resource Info (uses, etc.) --}}
                   {{#with (getResourceInfo _item)}}
@@ -254,6 +299,21 @@
                 <div class="dgm-feature-content">
                   {{{description}}}
                 </div>
+
+                {{!-- Action Buttons (one per system.actions entry, matching the sheet's chat card) --}}
+                {{#if actions.length}}
+                <div class="dgm-feature-actions">
+                  {{#each actions}}
+                  <button type="button"
+                          class="dgm-feature-action-btn"
+                          data-action="feature-action-use"
+                          data-feature-id="{{../id}}"
+                          data-action-id="{{id}}">
+                    <i class="fa-solid {{icon}}"></i><span>{{name}}</span>
+                  </button>
+                  {{/each}}
+                </div>
+                {{/if}}
               </details>
             </li>
 
@@ -269,71 +329,74 @@
     </div>
   </div>
 
-  {{!-- =============== RANGE TEMPLATE PANEL =============== --}}
-  <div class="dgm-tabwrap">
-    <div id="dgm-range-panel" 
-        class="dgm-panel dgm-panel--range" 
-        data-panel="range" 
-        role="dialog" 
-        aria-label="Range Template Options">
-      
-      {{!-- Panel Header --}}
-      <div class="dgm-header">
-        <header class="dgm-panel-header">
-          <div class="dgm-adversary-name">{{l 'DAGGERHEART.GENERAL.range'}}: {{primaryAttack.rangeName}}</div>
-        </header>
-        <div class="dgm-divider"></div>
+  {{!-- =============== PORTRAIT CONTEXT MENU & STATUS GRID =============== --}}
+
+  {{!-- Context Menu --}}
+  <div class="dgm-context-menu" id="dgm-context-menu">
+    <div class="dgm-context-item" data-action="apply-status">
+      <i class="fas fa-magic"></i>
+      Toggle Conditions
+    </div>
+    <div class="dgm-context-item" data-action="toggle-lock" id="dgm-context-lock">
+      <i class="fas fa-lock-open"></i>
+      <span>Lock Position</span>
+    </div>
+    <div class="dgm-context-theme" id="dgm-context-theme">
+      <div class="dgm-context-item dgm-theme-arrow" role="button" tabindex="0" data-action="theme-prev" aria-label="Previous theme">
+        <i class="fas fa-chevron-left"></i>
       </div>
-
-      {{!-- Range Actions List --}}
-      <div class="dgm-range-actions">
-        
-        {{!-- Create Template Action --}}
-        {{#unless (eq primaryAttack.range "melee")}}
-        {{#unless (eq primaryAttack.range "veryfar")}}
-        <div class="dgm-range-action dgm-roll"
-            role="button"
-            tabindex="0"
-            data-action="create-range-template"
-            data-range="{{primaryAttack.range}}"
-            title="Create {{primaryAttack.rangeName}} range template">
-          <i class="fa-solid fa-bullseye"></i>
-          <span>Create {{primaryAttack.rangeName}} template</span>
-        </div>
-        {{/unless}}
-        {{/unless}}
-        
-        {{!-- Cleanup Actions --}}
-        <div class="dgm-range-action dgm-roll"
-            role="button"
-            tabindex="0"
-            data-action="cleanup-templates"
-            title="Clear templates for this token">
-          <i class="fa-solid fa-broom"></i>
-          <span>Clear template</span>
-        </div>
-        
-        <div class="dgm-range-action dgm-roll"
-            role="button"
-            tabindex="0"
-            data-action="cleanup-all-templates"
-            title="Clear all range templates in scene">
-          <i class="fa-solid fa-trash-can"></i>
-          <span>Clear all range templates</span>
-        </div>
-
-        {{!-- Toggle Fill Action --}}
-        <div class="dgm-range-action dgm-roll"
-            role="button"
-            tabindex="0"
-            data-action="toggle-fill"
-            title="Toggle template fill color">
-          <i class="fa-solid fa-palette"></i>
-          <span>Toggle fill</span>
-        </div>
-
+      <span class="dgm-theme-label">Theme: Default</span>
+      <div class="dgm-context-item dgm-theme-arrow" role="button" tabindex="0" data-action="theme-next" aria-label="Next theme">
+        <i class="fas fa-chevron-right"></i>
       </div>
     </div>
   </div>
+
+  {{!-- Status Effects Grid --}}
+  <div class="dgm-status-grid" id="dgm-status-grid">
+    <div class="dgm-status-header">
+      <i class="fas fa-magic"></i>
+      Toggle Condition
+    </div>
+
+    {{#if availableConditions}}
+      <div class="dgm-status-section">
+        <div class="dgm-status-section-title">Daggerheart Conditions</div>
+        <div class="dgm-status-icons" data-section="daggerheart">
+          {{#each availableConditions}}
+            {{#if (eq source "daggerheart")}}
+              <div class="dgm-status-icon {{#if isActive}}active{{/if}}"
+                   data-condition-id="{{id}}"
+                   data-condition-name="{{l name}}"
+                   title="{{l name}}">
+                <img src="{{img}}" alt="{{l name}}">
+              </div>
+            {{/if}}
+          {{/each}}
+        </div>
+      </div>
+
+      {{#if showGenericStatusSection}}
+      <div class="dgm-status-section">
+        <div class="dgm-status-section-title">Generic Conditions</div>
+        <div class="dgm-status-icons" data-section="generic">
+          {{#each availableConditions}}
+            {{#if (eq source "foundry")}}
+              <div class="dgm-status-icon {{#if isActive}}active{{/if}}"
+                  data-condition-id="{{id}}"
+                  data-condition-name="{{l name}}"
+                  title="{{l name}}">
+                <img src="{{img}}" alt="{{l name}}">
+              </div>
+            {{/if}}
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+    {{/if}}
+  </div>
+
+  {{!-- Tooltip --}}
+  <div class="dgm-tooltip" id="dgm-tooltip"></div>
 
 </section>

@@ -7,11 +7,12 @@ export async function enrichItemDescription(item) {
   const TextEditorImpl = foundry.applications.ux.TextEditor.implementation;
   
   // Foundry will parse [[/r ...]] and resolve @UUID, etc.
+  // GM-only HUD: always reveal secret blocks, no reveal-toggle needed here.
   const html = await TextEditorImpl.enrichHTML(raw, {
     async: true,
     rollData,
     relativeTo: item,
-    secrets: false,
+    secrets: true,
     documents: true,
     links: true,
     rolls: true
@@ -33,6 +34,15 @@ function pickDieIcon(formula = "") {
 export function toHudInlineButtons(enrichedHTML, { enableDuality = true } = {}) {
   const root = document.createElement("div");
   root.innerHTML = enrichedHTML;
+
+  // TextEditor always wraps secret blocks in a <secret-block> that injects a live "Reveal" button
+  // via its own connectedCallback (see client/applications/elements/secret-block.mjs). That button
+  // dispatches a "change" event meant for a document-editing sheet to persist - useless and confusing
+  // in a read-only GM HUD. Unwrap it so the (already GM-revealed) content just shows plainly.
+  for (const wrapper of root.querySelectorAll("secret-block")) {
+    const section = wrapper.querySelector(":scope > .secret") ?? wrapper;
+    wrapper.replaceWith(...section.childNodes);
+  }
 
   // [[/r ...]] buttons
   for (const a of root.querySelectorAll("a.inline-roll")) {

@@ -5,11 +5,30 @@ const MODULE_ID = "daggerheart-gm-hud";
 // Export the SETTINGS constant
 export const SETTINGS = {
   theme: "theme",
-  customFrame: "customFrame", 
+  customFrame: "customFrame",
   ringFrameScale: "ringFrameScale",
   disableRingFrames: "disableRingFrames",
+  wideFeaturesPanel: "wideFeaturesPanel",
   debug: "debug"
 };
+
+// Theme id -> display label. Keep in sync with styles/dgm-themes.css (.dgm-theme-<id>).
+export const THEMES = {
+  default: "Default",
+  shadowveil: "Shadowveil",
+  ironclad: "Ironclad",
+  wildfire: "Wildfire",
+  frostbite: "Frostbite"
+};
+
+const THEME_KEYS = Object.keys(THEMES);
+
+/** Next/previous theme id from `theme`, wrapping infinitely both ways. */
+export function adjacentTheme(theme, dir) {
+  const i = THEME_KEYS.indexOf(theme);
+  const n = THEME_KEYS.length;
+  return THEME_KEYS[(((i < 0 ? 0 : i) + (dir < 0 ? -1 : 1)) % n + n) % n];
+}
 
 export function getSetting(key) {
   return game.settings.get(MODULE_ID, key);
@@ -27,67 +46,47 @@ function updateRingFrameScale(value) {
   const newSize = Math.round(baseSize * scaleFactor);
   
   document.documentElement.style.setProperty('--dgm-ring-scale', `${newSize}px`);
-  
-  if (getSetting(SETTINGS.debug)) {
-    console.log(`[GM HUD] Ring frame scale updated to ${value}% (${newSize}px)`);
-  }
+
+  debugLog(`Ring frame scale updated to ${value}% (${newSize}px)`);
+}
+
+function updateWideFeaturesPanel() {
+  const wide = getSetting(SETTINGS.wideFeaturesPanel);
+  document.documentElement.classList.toggle('dgm-wide-features', !!wide);
+  debugLog(`Wide features panel ${wide ? 'enabled' : 'disabled'}`);
 }
 
 function updateRingFrameVisibility() {
   const disabled = getSetting("disableRingFrames");
-  
-  console.log("[GM HUD Debug] updateRingFrameVisibility called");
-  console.log("[GM HUD Debug] Ring frames disabled:", disabled);
-  
+
+  debugLog("updateRingFrameVisibility called, disabled:", disabled);
+
   if (disabled) {
-    // Hide all ring frames by adding a CSS class
     document.documentElement.classList.add('dgm-disable-rings');
-    console.log("[GM HUD Debug] Added dgm-disable-rings class");
   } else {
-    // Remove the disable class
     document.documentElement.classList.remove('dgm-disable-rings');
-    console.log("[GM HUD Debug] Removed dgm-disable-rings class");
-    
-    // Handle custom frames normally
+
     const customFrame = getSetting(SETTINGS.customFrame);
-    console.log("[GM HUD Debug] Custom frame setting value:", customFrame);
-    
+
     if (customFrame && customFrame.trim()) {
-      // Use custom frame - apply to all HUD instances
       const imagePath = customFrame.startsWith('/') ? customFrame : `/${customFrame}`;
       const frameUrl = `url("${imagePath}")`;
-      console.log("[GM HUD Debug] Setting custom frame URL:", frameUrl);
-      
-      // Set on document root for global access
+
       document.documentElement.style.setProperty('--dgm-ring-frame', frameUrl);
-      
-      // Also set on any existing HUD instances to override theme
+
       const hudElements = document.querySelectorAll('.daggerheart-gm-hud');
-      hudElements.forEach(hud => {
-        hud.style.setProperty('--dgm-ring-frame', frameUrl);
-        console.log("[GM HUD Debug] Applied custom frame to HUD element:", hud);
-      });
-      
-      // Verify it was set
-      const actualValue = document.documentElement.style.getPropertyValue('--dgm-ring-frame');
-      console.log("[GM HUD Debug] Actual CSS property value:", actualValue);
+      hudElements.forEach(hud => hud.style.setProperty('--dgm-ring-frame', frameUrl));
+
+      debugLog("Applied custom frame:", frameUrl);
     } else {
-      // No custom frame - remove override and let theme CSS handle it
-      console.log("[GM HUD Debug] No custom frame, removing CSS property overrides");
       document.documentElement.style.removeProperty('--dgm-ring-frame');
-      
-      // Remove from any existing HUD instances
+
       const hudElements = document.querySelectorAll('.daggerheart-gm-hud');
-      hudElements.forEach(hud => {
-        hud.style.removeProperty('--dgm-ring-frame');
-        console.log("[GM HUD Debug] Removed custom frame from HUD element:", hud);
-      });
+      hudElements.forEach(hud => hud.style.removeProperty('--dgm-ring-frame'));
+
+      debugLog("No custom frame, removed CSS property overrides");
     }
   }
-  
-  // Log current CSS custom properties
-  const currentRingFrame = getComputedStyle(document.documentElement).getPropertyValue('--dgm-ring-frame');
-  console.log("[GM HUD Debug] Final computed --dgm-ring-frame value:", currentRingFrame);
 }
 
 export function registerGMHUDSettings() {
@@ -99,13 +98,7 @@ export function registerGMHUDSettings() {
     scope: "world",
     config: true, // Always show, we'll filter in the settings menu render hook
     type: String,
-    choices: {
-      "default": "Default",
-      "shadowveil": "Shadowveil", 
-      "ironclad": "Ironclad",
-      "wildfire": "Wildfire",
-      "frostbite": "Frostbite"
-    },
+    choices: THEMES,
     default: "default",
     onChange: (value) => {
       // Apply theme logic here if needed
@@ -125,9 +118,7 @@ export function registerGMHUDSettings() {
     filePicker: "image",
     onChange: (value) => {
       updateRingFrameVisibility();
-      if (getSetting(SETTINGS.debug)) {
-        console.log(`[GM HUD] Custom frame changed to:`, value || 'default');
-      }
+      debugLog(`Custom frame changed to:`, value || 'default');
     }
   });
 
@@ -159,9 +150,21 @@ export function registerGMHUDSettings() {
     default: false,
     onChange: (value) => {
       updateRingFrameVisibility();
-      if (getSetting(SETTINGS.debug)) {
-        console.log(`[GM HUD] Ring frames ${value ? 'disabled' : 'enabled'}`);
-      }
+      debugLog(`Ring frames ${value ? 'disabled' : 'enabled'}`);
+    }
+  });
+
+  // Wide Features Panel - CLIENT SCOPED (each user can choose)
+  game.settings.register(MODULE_ID, SETTINGS.wideFeaturesPanel, {
+    name: "Wide Features Panel",
+    hint: "Make the features panel occupy two columns so more info is visible at once.",
+    scope: "world",
+    config: true, // Always show, we'll filter in the settings menu render hook
+    type: Boolean,
+    default: true,
+    onChange: (value) => {
+      updateWideFeaturesPanel();
+      debugLog(`Wide features panel ${value ? 'enabled' : 'disabled'}`);
     }
   });
 
@@ -174,9 +177,7 @@ export function registerGMHUDSettings() {
     type: Boolean,
     default: false,
     onChange: (value) => {
-      if (value) {
-        console.log(`[GM HUD] Debug mode enabled`);
-      }
+      if (value) debugLog(`Debug mode enabled`);
     }
   });
 
@@ -191,7 +192,10 @@ export function registerGMHUDSettings() {
     // Initialize ring frame scale
     const scale = getSetting(SETTINGS.ringFrameScale) || 0;
     updateRingFrameScale(scale);
-    
+
+    // Initialize wide features panel
+    updateWideFeaturesPanel();
+
     // Hook into the settings form to add live slider updates
     Hooks.on("renderSettingsConfig", (app, html) => {
       // Convert html to jQuery object if it isn't already (Foundry v13 compatibility)
@@ -226,6 +230,7 @@ export function registerGMHUDSettings() {
       `${MODULE_ID}.${SETTINGS.customFrame}`,
       `${MODULE_ID}.${SETTINGS.ringFrameScale}`,
       `${MODULE_ID}.disableRingFrames`,
+      `${MODULE_ID}.${SETTINGS.wideFeaturesPanel}`,
       `${MODULE_ID}.${SETTINGS.debug}`
     ];
     
@@ -233,7 +238,7 @@ export function registerGMHUDSettings() {
       const settingElement = $html.find(`[name="${settingName}"]`).closest('.form-group');
       if (settingElement.length) {
         settingElement.hide();
-        console.log(`[GM HUD] Hidden setting from player: ${settingName}`);
+        debugLog(`Hidden setting from player: ${settingName}`);
       }
     });
   });

@@ -1,16 +1,9 @@
 // module/daggerheart-gm-hud.mjs - Main Daggerheart GM HUD Module
 
-import { registerGMHUDSettings, getSetting, SETTINGS, debugLog, getCurrentTheme, applyThemeToElement } from "./settings.mjs";
+import { registerGMHUDSettings, getSetting, SETTINGS, debugLog, getCurrentTheme } from "./settings.mjs";
 import { DaggerheartGMHUD } from "./apps/dgm-adversary-hud.mjs";
 import { registerDHUDHelpers } from "./helpers/handlebars-helpers.mjs";
-
-
-const MODULE_ID = "daggerheart-gm-hud";
-
-// Template paths
-const TEMPLATE_PATHS = [
-  `modules/${MODULE_ID}/templates/hud-adversary.hbs`
-];
+import { TEMPLATE_PATHS } from "./constants.mjs";
 
 // Global HUD instance
 let _gmHudApp = null;
@@ -209,13 +202,24 @@ Hooks.on("createActiveEffect", (effect) => {
 
 Hooks.on("deleteActiveEffect", (effect) => {
   if (!game.user.isGM || !_gmHudApp) return;
-  
+
   if (_gmHudApp.actor?.id === effect.parent?.id) {
     debugLog("Active effect removed from displayed actor, refreshing HUD");
     const currentToken = getControlledAdversaryToken();
     if (currentToken) {
       createOrUpdateGMHUD(currentToken);
     }
+  }
+});
+
+/**
+ * Keep the Fear display in sync when it changes from elsewhere (e.g. the system's own Fear Tracker).
+ */
+Hooks.on("updateSetting", (setting) => {
+  if (!game.user.isGM || !_gmHudApp) return;
+
+  if (setting.key === `${CONFIG.DH.id}.${CONFIG.DH.SETTINGS.gameSettings.Resources.Fear}`) {
+    _gmHudApp.render();
   }
 });
 

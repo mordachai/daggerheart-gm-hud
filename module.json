@@ -2,7 +2,7 @@
   "id": "daggerheart-gm-hud",
   "title": "Daggerheart GM HUD",
   "description": "GM-focused HUD for managing adversaries in the Daggerheart system.",
-  "version": "1.6.4",
+  "version": "2.0.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -25,6 +25,13 @@
         "id": "daggerheart",
         "type": "system",
         "compatibility": {}
+      }
+    ],
+    "recommends": [
+      {
+        "id": "daggerheart-distances",
+        "type": "module",
+        "reason": "Powers the range-ring/highlight toggle on the adversary HUD's range badge."
       }
     ]
   },
