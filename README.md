@@ -11,26 +11,50 @@ A streamlined HUD for Game Masters running Daggerheart sessions, providing quick
 
 https://github.com/user-attachments/assets/8256bc3f-ae30-45b0-b933-dc727646f66b
 
+## What's New in 2.0.0
+
+Mega update — big refactor + new capabilities:
+
+- **Two Column Layout**: Features panel can show two columns for more info at a glance (toggle back to one column in Settings)
+- **Daggerheart: Distances integration**: range/reach visualization now delegates to the [Daggerheart: Distances](https://github.com/) module's ring API instead of drawing custom templates — install that module to use range buttons
+- **Spend Fear from the HUD**: adjust the world Fear pool directly, no more switching windows
+- **Utility Belt slots with Features**: drag items/features into slots, right-click a slot to clear it, drag-and-drop to rearrange
+- **Theme Selector & Lock Position**: right-click the portrait for a context menu — cycle themes and lock the HUD in place without leaving the HUD
+- Codebase rewritten from one 1,200+ line file into focused modules (`system/`, `hud/`, `hud/context/`) — rolls, damage, and chat now go through the real Daggerheart system API instead of hand-rolled logic:
+  - Shift/Alt/Ctrl-click on the attack icon now skips/modifies the roll config dialog, same as the rest of the system
+  - "Send to chat" produces the system's real ability card
+  - Damage rolls correctly apply active-effect damage bonuses (attack and damage are one system action now, so the separate damage button was removed)
+  - Reaction rolls verified against the system's own reaction-roll config
+  - Removed dead code paths that never matched the current Daggerheart system API
+
 ## HUD Mouse Controls:
 
 ### On the Core (Portrait Area):
 - **Click n' drag:** moves HUD around the screen
 - **Double click:** opens the adversary's character sheet
+- **Right click:** opens context menu — toggle conditions, lock/unlock position, cycle theme
 
 ### On the Resources (Left Side):
 - **Reaction Roll Button:** Click to roll a reaction for the adversary
 - **HP & Stress:** Left-click = **+1**, Right-click = **-1**
+- **Fear:** Adjust the shared world Fear pool directly from the HUD
 - **Difficulty:** Displays the adversary's difficulty rating
 
 ### On the Attack (Right Side):
-- **Attack Icon:** Click to roll the adversary's primary attack
+- **Attack Icon:** Click to roll the adversary's primary attack (Shift/Alt/Ctrl-click to skip/modify the roll config dialog)
 - Shows attack bonus, range, damage, and damage type
 
 ### Features Panel:
 - **Features Button:** Toggle to open/close the features panel
 - **Feature Icons:** Click to execute feature actions (if available)
 - **Chat Button:** Send feature description to chat
-- **Panel:** Automatically positions above or below the HUD based on available screen space
+- **Panel:** Automatically positions above or below the HUD based on available screen space, one or two columns depending on Settings
+
+### Utility Belt:
+- **Click:** execute the slotted item/feature
+- **Right-click:** clear a slot
+- **Drag and drop:** rearrange slots, or drag in a new item/feature
+- **+ button:** add another slot
 
 ## Features
 
@@ -38,22 +62,24 @@ https://github.com/user-attachments/assets/8256bc3f-ae30-45b0-b933-dc727646f66b
 - **Smart Positioning**: HUD remembers its position and features panel adapts to screen boundaries
 - **Quick Actions**: One-click access to attacks, reactions, and resource adjustments
 - **Feature Management**: Browse and execute adversary features with detailed descriptions
-- **Draggable Interface**: Position the HUD anywhere on screen for optimal workflow
-- **Theme Support**: Multiple color themes to match your campaign aesthetic
+- **Utility Belt**: Customizable slots for quick-access items and features, with drag-and-drop rearranging
+- **Draggable Interface**: Position the HUD anywhere on screen for optimal workflow, with an option to lock it in place
+- **Theme Support**: Multiple color themes to match your campaign aesthetic, switchable from a right-click menu
 - **Ring Customization**: Custom portrait frames and scaling options
+- **Range Visualization**: Optional integration with the Daggerheart: Distances module for on-canvas range rings
 
 ## GM Workflow
 
 1. **Select an adversary token** - The HUD automatically appears for GM users
-2. **Quick resource tracking** - Adjust HP/Stress with simple clicks
-3. **Roll attacks and reactions** - Single-click combat actions
+2. **Quick resource tracking** - Adjust HP/Stress/Fear with simple clicks
+3. **Roll attacks and reactions** - Single-click combat actions, modifier-click for fast rolls
 4. **Access features** - Toggle the features panel for special abilities
-5. **Move freely** - Drag the HUD to your preferred screen position
+5. **Move freely** - Drag the HUD to your preferred screen position, or lock it once it's placed
 
 ## Settings
 
 ### Theme Options:
-Choose from multiple color schemes:
+Choose from multiple color schemes (also available via the portrait's right-click context menu):
 - Default (Golden)
 - Shadowveil (Purple)
 - Ironclad (Blue)
