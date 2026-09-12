@@ -6,8 +6,7 @@
 
 A streamlined HUD for Game Masters running Daggerheart sessions, providing quick access to adversary information and actions without cluttering the interface.
 
-<img width="1130" height="768" alt="image" src="https://github.com/user-attachments/assets/6c2bd102-8e7f-44b5-86ae-d8d63ba2331a" />
-
+<img width="704" height="589" alt="image" src="https://github.com/user-attachments/assets/569ea625-be40-49c0-b9a4-c3c9aedbe13c" />
 
 https://github.com/user-attachments/assets/8256bc3f-ae30-45b0-b933-dc727646f66b
 
@@ -20,6 +19,9 @@ Mega update — big refactor + new capabilities:
 - **Spend Fear from the HUD**: adjust the world Fear pool directly, less mouse travel around
 - **Utility Belt slots with Features**: drag items/features into slots, right-click a slot to clear it, drag-and-drop to rearrange
 - **Theme Selector & Lock Position**: right-click the portrait for a context menu — cycle themes and lock the HUD in place without leaving the HUD
+
+<img width="383" height="333" alt="image" src="https://github.com/user-attachments/assets/e2c18bb2-f58c-4aec-b7c9-0423aaebcb33" />
+
 - Codebase rewritten from one 1,200+ line file into focused modules (`system/`, `hud/`, `hud/context/`) — rolls, damage, and chat now go through the real Daggerheart system API instead of hand-rolled logic:
   - Shift/Alt/Ctrl-click on the attack icon now skips/modifies the roll config dialog, same as the rest of the system
   - "Send to chat" produces the system's real ability card
