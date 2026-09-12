@@ -9,6 +9,7 @@ export const SETTINGS = {
   ringFrameScale: "ringFrameScale",
   disableRingFrames: "disableRingFrames",
   wideFeaturesPanel: "wideFeaturesPanel",
+  hudBgOpacity: "hudBgOpacity",
   debug: "debug"
 };
 
@@ -48,6 +49,11 @@ function updateRingFrameScale(value) {
   document.documentElement.style.setProperty('--dgm-ring-scale', `${newSize}px`);
 
   debugLog(`Ring frame scale updated to ${value}% (${newSize}px)`);
+}
+
+function updateHudBgOpacity(value) {
+  document.documentElement.style.setProperty('--dgm-hud-bg-opacity', value);
+  debugLog(`HUD background opacity updated to ${value}`);
 }
 
 function updateWideFeaturesPanel() {
@@ -168,6 +174,24 @@ export function registerGMHUDSettings() {
     }
   });
 
+  // HUD Background Opacity - CLIENT SCOPED (each user can adjust their own)
+  game.settings.register(MODULE_ID, SETTINGS.hudBgOpacity, {
+    name: "HUD Background Opacity",
+    hint: "Opacity of the HUD panel background, from transparent (0) to fully opaque (1).",
+    scope: "world",
+    config: true, // Always show, we'll filter in the settings menu render hook
+    type: Number,
+    range: {
+      min: 0,
+      max: 1,
+      step: 0.05
+    },
+    default: 1,
+    onChange: (value) => {
+      updateHudBgOpacity(value);
+    }
+  });
+
   // Debug Mode - CLIENT SCOPED (each user can enable their own debug)
   game.settings.register(MODULE_ID, SETTINGS.debug, {
     name: "Debug Mode",
@@ -195,6 +219,9 @@ export function registerGMHUDSettings() {
 
     // Initialize wide features panel
     updateWideFeaturesPanel();
+
+    // Initialize tooltip background opacity
+    updateHudBgOpacity(getSetting(SETTINGS.hudBgOpacity));
 
     // Hook into the settings form to add live slider updates
     Hooks.on("renderSettingsConfig", (app, html) => {
@@ -231,6 +258,7 @@ export function registerGMHUDSettings() {
       `${MODULE_ID}.${SETTINGS.ringFrameScale}`,
       `${MODULE_ID}.disableRingFrames`,
       `${MODULE_ID}.${SETTINGS.wideFeaturesPanel}`,
+      `${MODULE_ID}.${SETTINGS.hudBgOpacity}`,
       `${MODULE_ID}.${SETTINGS.debug}`
     ];
     

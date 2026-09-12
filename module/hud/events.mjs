@@ -158,10 +158,10 @@ const reactionBtn = ev.target.closest("[data-action='roll-reaction']");
     const actor = app.actor;
     if (!actor) return;
 
-    const valueEl = ev.target.closest(".dgm-count .value");
-    if (valueEl) {
+    const countEl = ev.target.closest(".dgm-count--hp, .dgm-count--stress");
+    if (countEl) {
       stop(ev);
-      const bind = valueEl.dataset.bind;
+      const bind = countEl.querySelector(".value")?.dataset.bind;
       if (bind === "hp") {
         const max = Number(actor.system?.resources?.hitPoints?.max ?? 0);
         await adjustResource(actor, "system.resources.hitPoints.value", -1, { min: 0, max });
@@ -179,10 +179,10 @@ const reactionBtn = ev.target.closest("[data-action='roll-reaction']");
     const actor = app.actor;
     if (!actor) return;
 
-    const valueEl = ev.target.closest(".dgm-count .value");
-    if (valueEl) {
+    const countEl = ev.target.closest(".dgm-count--hp, .dgm-count--stress");
+    if (countEl) {
       stop(ev);
-      const bind = valueEl.dataset.bind;
+      const bind = countEl.querySelector(".value")?.dataset.bind;
       if (bind === "hp") {
         const max = Number(actor.system?.resources?.hitPoints?.max ?? 0);
         await adjustResource(actor, "system.resources.hitPoints.value", +1, { min: 0, max });

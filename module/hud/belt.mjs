@@ -86,7 +86,7 @@ export function attachBeltEvents(app) {
 
   rootEl.addEventListener("mouseover", (ev) => {
     const slot = ev.target.closest(".dgm-belt-slot.filled");
-    if (slot) showTooltip(app, slot, slot.dataset.description || slot.dataset.name, { wrap: true });
+    if (slot) showTooltip(app, slot, slot.dataset.description || slot.dataset.name, { wrap: true, variant: "belt" });
   });
 
   rootEl.addEventListener("mouseout", (ev) => {

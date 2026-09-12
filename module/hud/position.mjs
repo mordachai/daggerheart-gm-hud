@@ -41,9 +41,22 @@ export async function setPositionLocked(appEl, locked) {
   if (appEl) appEl.classList.toggle("dgm-position-locked", !!locked);
 }
 
+/** Elements inside the HUD container that must keep their own click/drag behavior. */
+const INTERACTIVE_SELECTOR = [
+  "[data-action]",
+  ".dgm-count",
+  ".dgm-belt-slot",
+  ".dgm-belt-add",
+  "button",
+  "a",
+  "input",
+  "select",
+  "textarea"
+].join(", ");
+
 export function enableDragging(app) {
   const root = app.element;
-  const handle = root.querySelector(".dgm-core");
+  const handle = root.querySelector(".dgm-container");
   if (!handle) return;
 
   let startX, startY, startLeft, startTop, isDragging = false;
@@ -118,7 +131,7 @@ export function enableDragging(app) {
   const onDown = (ev) => {
     if (ev.button !== 0) return;
     if (isPositionLocked()) return;
-    if (ev.target.closest(".dgm-roll, .dgm-count .value, .dgm-features-toggle")) return;
+    if (ev.target.closest(INTERACTIVE_SELECTOR)) return;
 
     ev.preventDefault();
     isDragging = true;

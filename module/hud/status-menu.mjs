@@ -142,18 +142,22 @@ export function hideStatusGrid(app) {
   if (grid) grid.classList.remove("show");
 }
 
+const TOOLTIP_VARIANTS = ["dgm-tooltip--belt"];
+
 export function hideTooltip(app) {
   const tooltip = app.element?.querySelector("#dgm-tooltip");
-  if (tooltip) tooltip.classList.remove("show", "dgm-tooltip--wrap");
+  if (tooltip) tooltip.classList.remove("show");
 }
 
-const TOOLTIP_GAP = 8;
+const TOOLTIP_GAP = 10;
 
-export function showTooltip(app, targetEl, text, { wrap = false } = {}) {
+export function showTooltip(app, targetEl, text, { wrap = false, variant = null } = {}) {
   const tooltip = app.element.querySelector("#dgm-tooltip");
   if (!tooltip || !text || !targetEl) return;
   tooltip.textContent = text;
   tooltip.classList.toggle("dgm-tooltip--wrap", wrap);
+  tooltip.classList.remove(...TOOLTIP_VARIANTS);
+  if (variant) tooltip.classList.add(`dgm-tooltip--${variant}`);
   tooltip.classList.add("show");
 
   // Coordinates are viewport-relative, but the tooltip is positioned relative to its
@@ -165,8 +169,10 @@ export function showTooltip(app, targetEl, text, { wrap = false } = {}) {
 
   const left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2;
   const above = targetRect.top - tooltipRect.height - TOOLTIP_GAP;
-  const top = above < 0 ? targetRect.bottom + TOOLTIP_GAP : above;
+  const flipped = above < 0;
+  const top = flipped ? targetRect.bottom + TOOLTIP_GAP : above;
 
+  tooltip.classList.toggle("dgm-tooltip--below", flipped);
   tooltip.style.left = `${left - anchorRect.left}px`;
   tooltip.style.top = `${top - anchorRect.top}px`;
 }
@@ -240,12 +246,25 @@ export function attachStatusMenu(app) {
     const statusIcon = clicked.closest(".dgm-status-icon");
     const contextMenu = clicked.closest("#dgm-context-menu, .dgm-context-menu");
     const statusGrid = clicked.closest("#dgm-status-grid, .dgm-status-grid");
-    const withinHUD = rootEl.contains(clicked);
-    if (!statusIcon && !contextMenu && !statusGrid && !withinHUD) {
+    if (!statusIcon && !contextMenu && !statusGrid) {
       hideContextMenu(app);
       hideStatusGrid(app);
     }
   }, { capture: true });
+
+  // Auto-close the context menu when the mouse leaves it, so it doesn't linger
+  // until an unrelated click happens elsewhere. A short delay keeps it open
+  // while the user browses across the menu's items (e.g. theme prev/next).
+  const contextMenuEl = rootEl.querySelector("#dgm-context-menu");
+  if (contextMenuEl) {
+    let closeTimer = null;
+    contextMenuEl.addEventListener("mouseleave", () => {
+      closeTimer = setTimeout(() => hideContextMenu(app), 400);
+    });
+    contextMenuEl.addEventListener("mouseenter", () => {
+      if (closeTimer) clearTimeout(closeTimer);
+    });
+  }
 
   rootEl.addEventListener("keydown", (ev) => {
     if (ev.key === "Escape") {

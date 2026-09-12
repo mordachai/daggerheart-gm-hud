@@ -32,45 +32,49 @@
 
       {{!-- CORE SECTION - Keep dgm-core class for dragging --}}
       <div class="dgm-section dgm-section--core dgm-core">
-      
-        {{!-- Reaction Roll Button --}}
-        <div class="dgm-reaction-roll dgm-roll"
-              role="button"
-              tabindex="0"
-              data-action="roll-reaction"
-              title="{{l 'DAGGERHEART.GENERAL.reactionRoll'}}">
-          <i class="fa-solid fa-reply"></i>
-          {{!-- <span class="dgm-button-label">Reaction</span> --}}
+
+        {{!-- Left column: features toggle, reaction roll, fear - in-flow so the panel's real
+             width includes them (avoids them floating outside the HUD background) --}}
+        <div class="dgm-core-aside">
+          {{!-- Features Toggle --}}
+          <div class="dgm-features-toggle dgm-tab"
+                role="button"
+                tabindex="0"
+                data-tab="features"
+                data-action="toggle-features"
+                aria-controls="dgm-features-panel"
+                aria-expanded="false"
+                title="{{l 'DAGGERHEART.GENERAL.features'}}">
+            <span class="dgm-features-icon">F</span>
+            {{!-- <span class="dgm-features-icon">{{l 'DAGGERHEART.GENERAL.features'}}</span> --}}
+          </div>
+
+          {{!-- Reaction Roll Button --}}
+          <div class="dgm-reaction-roll dgm-roll"
+                role="button"
+                tabindex="0"
+                data-action="roll-reaction"
+                title="{{l 'DAGGERHEART.GENERAL.reactionRoll'}}">
+            <i class="fa-solid fa-reply"></i>
+            {{!-- <span class="dgm-button-label">Reaction</span> --}}
+          </div>
+
+          {{!-- Fear - Left-click: spend, Right-click: gain --}}
+          <div class="dgm-fear dgm-roll"
+                role="button"
+                tabindex="0"
+                data-action="fear-adjust"
+                title="{{l 'DAGGERHEART.GENERAL.fear'}}: {{fear}}&#10;Left-click: Spend Fear&#10;Right-click: Gain Fear">
+            <i class="fa-solid fa-skull"></i>
+            <span class="dgm-fear-value">{{fear}}</span>
+          </div>
         </div>
 
-        {{!-- Fear - Left-click: spend, Right-click: gain --}}
-        <div class="dgm-fear dgm-roll"
-              role="button"
-              tabindex="0"
-              data-action="fear-adjust"
-              title="{{l 'DAGGERHEART.GENERAL.fear'}}: {{fear}}&#10;Left-click: Spend Fear&#10;Right-click: Gain Fear">
-          <i class="fa-solid fa-skull"></i>
-          <span class="dgm-fear-value">{{fear}}</span>
-        </div>
-
-        {{!-- Portrait below --}}
+        {{!-- Portrait --}}
         <div class="dgm-portrait-wrapper">
           <div class="dgm-portrait" title="{{adversaryName}} - Tier {{tier}}">
             <img class="dgm-portrait-img" src="{{portrait}}" alt="{{adversaryName}}">
           </div>
-        </div>
-
-        {{!-- Features Toggle on top --}}
-        <div class="dgm-features-toggle dgm-tab"
-              role="button"
-              tabindex="0"
-              data-tab="features"
-              data-action="toggle-features"
-              aria-controls="dgm-features-panel"
-              aria-expanded="false"
-              title="{{l 'DAGGERHEART.GENERAL.features'}}">
-          <span class="dgm-features-icon">F</span>
-          {{!-- <span class="dgm-features-icon">{{l 'DAGGERHEART.GENERAL.features'}}</span> --}}
         </div>
 
       </div>
