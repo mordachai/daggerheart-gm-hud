@@ -97,20 +97,38 @@ export function reapplyStoredFilter(app) {
   if (filter && filter !== "none") applyFeatureFilter(app, filter);
 }
 
-export function toggleFeaturesPanel(app) {
+/** Name of the panel currently open ("features", "details", ...) or "" when none. */
+export function getOpenPanelName(rootEl) {
+  return rootEl?.querySelector(".dgm-hud")?.getAttribute("data-open") || "";
+}
+
+/** Recompute open-direction / max-height of the currently open panel (resize, drag end). */
+export function repositionOpenPanel(rootEl) {
+  const name = getOpenPanelName(rootEl);
+  if (!name) return;
+  const panel = rootEl.querySelector(`.dgm-panel[data-panel="${name}"]`);
+  if (panel) setGMPanelOpenDirection(panel);
+}
+
+function syncToggleState(rootEl, openName) {
+  rootEl.querySelectorAll("[data-action='toggle-panel']").forEach((toggle) => {
+    toggle.setAttribute("aria-expanded", String(toggle.dataset.panel === openName));
+  });
+}
+
+/** Open the named panel (closing any other), or close it if it is already the open one. */
+export function togglePanel(app, name) {
   const rootEl = app.element;
   if (!rootEl) return;
 
   const shell = rootEl.querySelector(".dgm-hud");
-  const isOpen = shell?.getAttribute("data-open") === "features";
-  const newState = isOpen ? "" : "features";
-  shell?.setAttribute("data-open", newState);
-
-  const toggle = rootEl.querySelector("[data-action='toggle-features']");
-  toggle?.setAttribute("aria-expanded", String(!isOpen));
+  const isOpen = getOpenPanelName(rootEl) === name;
+  const openName = isOpen ? "" : name;
+  shell?.setAttribute("data-open", openName);
+  syncToggleState(rootEl, openName);
 
   if (!isOpen) {
-    const panel = rootEl.querySelector(".dgm-panel--features");
+    const panel = rootEl.querySelector(`.dgm-panel[data-panel="${name}"]`);
     if (panel) {
       requestAnimationFrame(() => {
         setGMPanelOpenDirection(panel);
@@ -120,9 +138,12 @@ export function toggleFeaturesPanel(app) {
   }
 }
 
+export function toggleFeaturesPanel(app) {
+  togglePanel(app, "features");
+}
+
 export function closeAllPanels(rootEl) {
   const shell = rootEl.querySelector(".dgm-hud");
   shell?.setAttribute("data-open", "");
-  const toggle = rootEl.querySelector("[data-action='toggle-features']");
-  toggle?.setAttribute("aria-expanded", "false");
+  syncToggleState(rootEl, "");
 }

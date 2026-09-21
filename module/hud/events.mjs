@@ -6,7 +6,7 @@ import { rollAttack } from "../system/attack.mjs";
 import { rollReaction, adjustResource } from "../system/actor.mjs";
 import { adjustFear } from "../system/fear.mjs";
 import {
-  toggleFeaturesPanel,
+  togglePanel,
   closeAllPanels,
   applyFeatureFilter,
   handleFeatureFilter
@@ -17,6 +17,15 @@ import {
   hasTemplateForRange,
   updateRangeButtonState
 } from "./range-templates.mjs";
+
+/** Collapse / expand a feature group (NPC features panel) from its title. */
+function toggleFeatureGroup(titleEl) {
+  const group = titleEl.closest(".dgm-feature-group");
+  if (!group) return;
+  const collapsed = group.dataset.collapsed !== "true";
+  group.dataset.collapsed = String(collapsed);
+  titleEl.title = collapsed ? "Click to expand" : "Click to collapse";
+}
 
 export function attachHudEvents(app) {
   const rootEl = app.element;
@@ -35,10 +44,17 @@ export function attachHudEvents(app) {
       return;
     }
 
-    const featuresToggle = ev.target.closest("[data-action='toggle-features']");
-    if (featuresToggle) {
+    const panelToggle = ev.target.closest("[data-action='toggle-panel']");
+    if (panelToggle) {
       stop(ev);
-      toggleFeaturesPanel(app);
+      togglePanel(app, panelToggle.dataset.panel);
+      return;
+    }
+
+    const groupTitle = ev.target.closest("[data-action='toggle-group']");
+    if (groupTitle) {
+      stop(ev);
+      toggleFeatureGroup(groupTitle);
       return;
     }
 
@@ -215,6 +231,12 @@ const reactionBtn = ev.target.closest("[data-action='roll-reaction']");
 
   rootEl.addEventListener("keydown", (ev) => {
     if (ev.key === "Escape") closeAllPanels(rootEl);
+
+    const groupTitle = ev.target.closest?.("[data-action='toggle-group']");
+    if (groupTitle && (ev.key === "Enter" || ev.key === " ")) {
+      stop(ev);
+      toggleFeatureGroup(groupTitle);
+    }
   });
 
   app._delegatedBound = true;

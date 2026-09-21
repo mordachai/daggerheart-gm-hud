@@ -1,8 +1,8 @@
 {
   "id": "daggerheart-gm-hud",
   "title": "Daggerheart GM HUD",
-  "description": "GM-focused HUD for managing adversaries in the Daggerheart system.",
-  "version": "2.0.2",
+  "description": "GM-focused HUD for managing adversaries and NPCs in the Daggerheart system.",
+  "version": "2.1.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"

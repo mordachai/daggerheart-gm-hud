@@ -16,14 +16,20 @@ function buildThresholds(sys) {
   };
 }
 
+/** Token art first, then actor art, then the prototype token, then a placeholder. */
+export function resolvePortrait(app) {
+  const actor = app.actor;
+  if (app.token?.texture?.src) return app.token.texture.src;
+  if (actor?.img?.trim()) return actor.img;
+  if (actor?.prototypeToken?.texture?.src) return actor.prototypeToken.texture.src;
+  return "icons/svg/mystery-man.svg";
+}
+
 export function collectIdentity(app) {
   const actor = app.actor;
   const sys = actor.system ?? {};
 
-  let portrait = "icons/svg/mystery-man.svg";
-  if (app.token?.texture?.src) portrait = app.token.texture.src;
-  else if (actor.img?.trim()) portrait = actor.img;
-  else if (actor.prototypeToken?.texture?.src) portrait = actor.prototypeToken.texture.src;
+  const portrait = resolvePortrait(app);
 
   const systemTypeRaw = String(sys.type ?? "").toLowerCase();
   const systemType = {

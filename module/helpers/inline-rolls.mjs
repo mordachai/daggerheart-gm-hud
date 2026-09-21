@@ -1,24 +1,41 @@
 // module/helpers/inline-rolls.mjs
-export async function enrichItemDescription(item) {
-  const raw = item.system?.description ?? "";
-  const rollData = item.getRollData?.() ?? item.actor?.getRollData?.() ?? {};
-
+/** Enrich any document HTML field (item or actor) for display in the HUD. */
+export async function enrichHudHTML(raw, { rollData = {}, relativeTo = null } = {}) {
   // Use the new Foundry v13 namespaced TextEditor
   const TextEditorImpl = foundry.applications.ux.TextEditor.implementation;
-  
+
   // Foundry will parse [[/r ...]] and resolve @UUID, etc.
   // GM-only HUD: always reveal secret blocks, no reveal-toggle needed here.
-  const html = await TextEditorImpl.enrichHTML(raw, {
+  return TextEditorImpl.enrichHTML(raw ?? "", {
     async: true,
     rollData,
-    relativeTo: item,
+    relativeTo,
     secrets: true,
     documents: true,
     links: true,
     rolls: true
   });
+}
 
-  return html;
+/**
+ * Enrich a document field into HUD-ready HTML (inline-roll buttons, secrets unwrapped).
+ * Returns "" when the field has nothing visible, e.g. null or an empty <p></p>.
+ */
+export async function enrichHudField(raw, options = {}) {
+  if (!String(raw ?? "").trim()) return "";
+  const html = toHudInlineButtons(await enrichHudHTML(raw, options));
+
+  const probe = document.createElement("div");
+  probe.innerHTML = html;
+  const visible = probe.textContent.trim() || probe.querySelector("img, hr, a, .dhud-inline-roll");
+  return visible ? html : "";
+}
+
+export async function enrichItemDescription(item) {
+  return enrichHudHTML(item.system?.description ?? "", {
+    rollData: item.getRollData?.() ?? item.actor?.getRollData?.() ?? {},
+    relativeTo: item
+  });
 }
 
 function pickDieIcon(formula = "") {

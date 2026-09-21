@@ -23,6 +23,7 @@ export function collectUtilityBelt(app, features) {
       name: feature?.name ?? "",
       img: feature?.img ?? null,
       description: feature ? stripHtml(feature.description) : "",
+      gmNotes: feature ? stripHtml(feature.gmNotes) : "",
       hasActions: feature?.hasActions ?? false,
       featureFormIcon: feature?.featureFormIcon ?? "",
       _item: feature?._item ?? null

@@ -1,0 +1,265 @@
+<section class="dgm-hud dgm-hud--layout dgm-hud--npc" data-open="">
+
+  {{!-- =============== MAIN CONTAINER =============== --}}
+  <div class="dgm-container">
+
+    {{!-- =============== UTILITY BELT =============== --}}
+    <div class="dgm-section dgm-section--belt">
+      <div class="dgm-belt" role="toolbar" aria-label="Utility belt">
+        {{#each utilityBelt.slots}}
+        <div class="dgm-belt-slot{{#if id}} filled{{/if}}"
+             data-slot-index="{{index}}"
+             data-feature-id="{{id}}"
+             data-name="{{name}}"
+             data-description="{{description}}"
+             data-gm-notes="{{gmNotes}}"
+             draggable="{{#if id}}true{{else}}false{{/if}}"
+             role="button"
+             tabindex="0"
+             {{#unless id}}title="Empty slot — right-click to remove"{{/unless}}>
+          {{#if img}}
+          <img class="dgm-belt-slot-icon" src="{{img}}" alt="{{name}}">
+          {{/if}}
+        </div>
+        {{/each}}
+        {{#if utilityBelt.canAddSlot}}
+        <div class="dgm-belt-add" role="button" tabindex="0" title="Add slot">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+
+    {{!-- =============== TOP ROW =============== --}}
+    <div class="dgm-top-row">
+
+      {{!-- CORE SECTION - Keep dgm-core class for dragging --}}
+      <div class="dgm-section dgm-section--core dgm-core">
+
+        {{!-- Left column: Features (top) / Details (below) toggles and Fear --}}
+        <div class="dgm-core-aside">
+          <div class="dgm-features-toggle dgm-tab"
+                role="button"
+                tabindex="0"
+                data-tab="features"
+                data-action="toggle-panel"
+                data-panel="features"
+                aria-controls="dgm-features-panel"
+                aria-expanded="false"
+                title="{{l 'DAGGERHEART.GENERAL.features'}}">
+            <span class="dgm-features-icon">F</span>
+          </div>
+
+          <div class="dgm-features-toggle dgm-details-toggle dgm-tab"
+                role="button"
+                tabindex="0"
+                data-tab="details"
+                data-action="toggle-panel"
+                data-panel="details"
+                aria-controls="dgm-details-panel"
+                aria-expanded="false"
+                title="Details">
+            <span class="dgm-features-icon">D</span>
+          </div>
+
+          {{!-- Fear - Left-click: spend, Right-click: gain --}}
+          <div class="dgm-fear dgm-roll"
+                role="button"
+                tabindex="0"
+                data-action="fear-adjust"
+                title="{{l 'DAGGERHEART.GENERAL.fear'}}: {{fear}}&#10;Left-click: Spend Fear&#10;Right-click: Gain Fear">
+            <i class="fa-solid fa-skull"></i>
+            <span class="dgm-fear-value">{{fear}}</span>
+          </div>
+        </div>
+
+        {{!-- Portrait --}}
+        <div class="dgm-portrait-wrapper">
+          <div class="dgm-portrait" title="{{npcName}}">
+            <img class="dgm-portrait-img" src="{{portrait}}" alt="{{npcName}}">
+          </div>
+        </div>
+
+      </div>
+
+      {{!-- DIFFICULTY BADGE - only when the NPC has a difficulty --}}
+      {{#if hasDifficulty}}
+      <div class="dgm-section dgm-section--resources">
+        <div class="dgm-count dgm-count--difficulty" title="{{l 'DAGGERHEART.GENERAL.difficulty'}}">
+          <div class="label"><i class="fa-solid fa-shield"></i></div>
+          <div class="info" title="Difficulty">{{difficulty}}</div>
+        </div>
+      </div>
+      {{/if}}
+
+    </div>
+
+    {{!-- =============== BOTTOM ROW =============== --}}
+    <div class="dgm-section dgm-section--nameplate">
+      <div class="dgm-nameplate" title="{{npcName}}">{{npcName}}</div>
+    </div>
+
+  </div>
+
+  {{!-- =============== PANELS (one open at a time: data-open="details" | "features") =============== --}}
+  <div class="dgm-tabwrap">
+
+    {{!-- Details panel: description, motives, then GM notes --}}
+    <div id="dgm-details-panel"
+         class="dgm-panel dgm-panel--details"
+         data-panel="details"
+         role="dialog"
+         aria-label="NPC Details">
+      <div class="dgm-header">
+        <header class="dgm-panel-header">
+          <div class="dgm-adversary-name">{{npcName}}</div>
+          <div class="dgm-pills-container">
+            <span class="dgm-adversary-pills">NPC</span>
+            {{#if hasDifficulty}}<span class="dgm-adversary-pills">{{l 'DAGGERHEART.GENERAL.difficulty'}} {{difficulty}}</span>{{/if}}
+          </div>
+        </header>
+      </div>
+      <div class="dgm-divider-center"></div>
+
+      {{#if description}}
+      <div class="dgm-section-description">{{{description}}}</div>
+      {{/if}}
+
+      {{#if motives}}
+      <span class="dgm-detail-label">Motives</span>
+      <div class="dgm-detail-text">{{{motives}}}</div>
+      {{/if}}
+
+      {{> "modules/daggerheart-gm-hud/templates/partials/gm-notes.hbs" html=notes}}
+
+      {{#unless hasDetails}}
+      <div class="dgm-detail-text">No details.</div>
+      {{/unless}}
+    </div>
+
+    {{!-- Features panel: grouped by feature form (Passive / Action / Reaction / Other) --}}
+    <div id="dgm-features-panel"
+         class="dgm-panel dgm-panel--features"
+         data-panel="features"
+         role="dialog"
+         aria-label="NPC Features">
+
+      <div class="dgm-features-container">
+        {{!-- Filter Controls (visible on hover) --}}
+        <div class="dgm-features-filter-bar">
+          <div class="dgm-filter-buttons">
+            <button class="dgm-filter-btn" data-action="expand-all" title="Expand all features">
+              <i class="fa-solid fa-expand-arrows-alt"></i>
+            </button>
+            <button class="dgm-filter-btn" data-action="expand-actions" title="Expand features with actions">
+              <i class="fa-solid fa-bolt"></i>
+            </button>
+            <button class="dgm-filter-btn" data-action="expand-passive" title="Expand passive features">
+              <i class="fa-solid fa-book"></i>
+            </button>
+            <button class="dgm-filter-btn" data-action="collapse-all" title="Collapse all features">
+              <i class="fa-solid fa-compress-arrows-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="dgm-divider-center"></div>
+
+        <div class="dgm-features-list">
+          {{#each featureGroups}}
+          <div class="dgm-feature-group" data-form="{{form}}" data-collapsed="false">
+            <div class="dgm-feature-group-title" role="button" tabindex="0" data-action="toggle-group" title="Click to collapse">
+              <i class="fa-solid {{icon}}"></i>{{label}}<span class="count">{{count}}</span>
+            </div>
+            <ul class="dgm-acc">
+              {{#each features}}
+              {{> "modules/daggerheart-gm-hud/templates/partials/feature-row.hbs"}}
+              {{/each}}
+            </ul>
+          </div>
+          {{else}}
+          <ul class="dgm-acc">
+            <li class="dgm-acc-item dgm-empty">{{l "DAGGERHEART.UI.Notifications.featureIsMissing"}}</li>
+          </ul>
+          {{/each}}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {{!-- =============== PORTRAIT CONTEXT MENU & STATUS GRID =============== --}}
+
+  {{!-- Context Menu (same ids / data-actions as the adversary HUD; only open-sheet is NPC-specific) --}}
+  <div class="dgm-context-menu" id="dgm-context-menu">
+    <div class="dgm-context-item" data-action="apply-status">
+      <i class="fas fa-magic"></i>
+      Toggle Conditions
+    </div>
+    <div class="dgm-context-item" data-action="open-sheet">
+      <i class="fas fa-user"></i>
+      Open Sheet
+    </div>
+    <div class="dgm-context-item" data-action="toggle-lock" id="dgm-context-lock">
+      <i class="fas fa-lock-open"></i>
+      <span>Lock Position</span>
+    </div>
+    <div class="dgm-context-theme" id="dgm-context-theme">
+      <div class="dgm-context-item dgm-theme-arrow" role="button" tabindex="0" data-action="theme-prev" aria-label="Previous theme">
+        <i class="fas fa-chevron-left"></i>
+      </div>
+      <span class="dgm-theme-label">Theme: Default</span>
+      <div class="dgm-context-item dgm-theme-arrow" role="button" tabindex="0" data-action="theme-next" aria-label="Next theme">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  </div>
+
+  {{!-- Status Effects Grid --}}
+  <div class="dgm-status-grid" id="dgm-status-grid">
+    <div class="dgm-status-header">
+      <i class="fas fa-magic"></i>
+      Toggle Condition
+    </div>
+
+    {{#if availableConditions}}
+      <div class="dgm-status-section">
+        <div class="dgm-status-section-title">Daggerheart Conditions</div>
+        <div class="dgm-status-icons" data-section="daggerheart">
+          {{#each availableConditions}}
+            {{#if (eq source "daggerheart")}}
+              <div class="dgm-status-icon {{#if isActive}}active{{/if}}"
+                   data-condition-id="{{id}}"
+                   data-condition-name="{{l name}}"
+                   title="{{l name}}">
+                <img src="{{img}}" alt="{{l name}}">
+              </div>
+            {{/if}}
+          {{/each}}
+        </div>
+      </div>
+
+      {{#if showGenericStatusSection}}
+      <div class="dgm-status-section">
+        <div class="dgm-status-section-title">Generic Conditions</div>
+        <div class="dgm-status-icons" data-section="generic">
+          {{#each availableConditions}}
+            {{#if (eq source "foundry")}}
+              <div class="dgm-status-icon {{#if isActive}}active{{/if}}"
+                  data-condition-id="{{id}}"
+                  data-condition-name="{{l name}}"
+                  title="{{l name}}">
+                <img src="{{img}}" alt="{{l name}}">
+              </div>
+            {{/if}}
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+    {{/if}}
+  </div>
+
+  {{!-- Tooltip --}}
+  <div class="dgm-tooltip" id="dgm-tooltip"></div>
+
+</section>

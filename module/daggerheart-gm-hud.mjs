@@ -1,66 +1,80 @@
 // module/daggerheart-gm-hud.mjs - Main Daggerheart GM HUD Module
 
-import { registerGMHUDSettings, getSetting, SETTINGS, debugLog, getCurrentTheme } from "./settings.mjs";
+import { registerGMHUDSettings, getSetting, SETTINGS, NPC_SETTING_HOOK, debugLog, getCurrentTheme } from "./settings.mjs";
 import { DaggerheartGMHUD } from "./apps/dgm-adversary-hud.mjs";
+import { DaggerheartGMNpcHUD } from "./apps/dgm-npc-hud.mjs";
 import { registerDHUDHelpers } from "./helpers/handlebars-helpers.mjs";
-import { TEMPLATE_PATHS } from "./constants.mjs";
+import { TEMPLATE_PATHS, HUD_KIND_IDS } from "./constants.mjs";
 
 // Global HUD instance
 let _gmHudApp = null;
 
 /**
- * Check if a token/actor is a valid Daggerheart adversary
+ * HUD kinds, keyed by Daggerheart actor type.
+ * `App` is the application class rendered for that actor type.
+ * `enabled` (optional) gates the kind, e.g. behind a client setting.
  */
-function isValidAdversary(token) {
+const HUD_KINDS = {
+  [HUD_KIND_IDS.adversary]: { App: DaggerheartGMHUD },
+  [HUD_KIND_IDS.npc]: { App: DaggerheartGMNpcHUD, enabled: () => getSetting(SETTINGS.showForNpcs) }
+};
+
+/**
+ * Resolve the HUD kind for a token, or null when the token gets no HUD
+ */
+function getHudKind(token) {
   const actor = token?.actor;
-  if (!actor || game.system?.id !== "daggerheart") return false;
-  
-  // Check if it's an adversary type actor
-  return actor.type === "adversary";
+  if (!actor || game.system?.id !== "daggerheart") return null;
+
+  const kind = HUD_KINDS[actor.type];
+  if (!kind) return null;
+  if (kind.enabled && !kind.enabled()) return null;
+  return kind;
 }
 
 /**
- * Get the currently controlled adversary token for GM
+ * Get the currently controlled token that qualifies for a HUD (GM only)
  */
-function getControlledAdversaryToken() {
+function getControlledHudToken() {
   if (!game.user.isGM) return null;
-  
+
   const controlledTokens = canvas.tokens?.controlled || [];
-  const adversaryTokens = controlledTokens.filter(isValidAdversary);
-  
-  // Return the last selected adversary token (as per requirements)
-  return adversaryTokens.length > 0 ? adversaryTokens[adversaryTokens.length - 1] : null;
+  const hudTokens = controlledTokens.filter((t) => getHudKind(t));
+
+  // Return the last selected eligible token (as per requirements)
+  return hudTokens.length > 0 ? hudTokens[hudTokens.length - 1] : null;
 }
 
 /**
- * Create or update the GM HUD for the given adversary token
+ * Create or update the GM HUD for the given token
  */
 function createOrUpdateGMHUD(token = null) {
   // Only for GMs
   if (!game.user.isGM) return;
-  
+
   debugLog("createOrUpdateGMHUD called with token:", token?.name);
-  
+
   // Close existing HUD if any
   if (_gmHudApp) {
     debugLog("Closing existing GM HUD");
     _gmHudApp.close({ force: true });
     _gmHudApp = null;
   }
-  
-  // Only create HUD if we have a valid adversary token
-  if (!token || !isValidAdversary(token)) {
-    debugLog("No valid adversary token, not creating HUD");
+
+  // Only create HUD if the token maps to a HUD kind
+  const kind = token ? getHudKind(token) : null;
+  if (!kind) {
+    debugLog("No eligible token, not creating HUD");
     return;
   }
-  
-  debugLog("Creating GM HUD for adversary:", token.actor.name);
-  
+
+  debugLog("Creating GM HUD for:", token.actor.name, `(${token.actor.type})`);
+
   try {
     // Create the actual HUD application instance
-    _gmHudApp = new DaggerheartGMHUD({ 
-      actor: token.actor, 
-      token: token.document || token 
+    _gmHudApp = new kind.App({
+      actor: token.actor,
+      token: token.document || token
     });
     _gmHudApp.render(true);
     
@@ -114,20 +128,20 @@ Hooks.on("controlToken", (token, controlled) => {
   
   debugLog("controlToken hook - Token:", token.actor?.name, "Controlled:", controlled);
   
-  if (controlled && isValidAdversary(token)) {
-    // GM selected an adversary token
-    debugLog("GM selected adversary token:", token.actor.name);
+  if (controlled && getHudKind(token)) {
+    // GM selected a token that gets a HUD
+    debugLog("GM selected HUD token:", token.actor.name);
     createOrUpdateGMHUD(token);
   } else if (!controlled) {
-    // Token was deselected - check if we still have other adversary tokens selected
-    const remainingAdversary = getControlledAdversaryToken();
-    if (remainingAdversary && remainingAdversary.id !== token.id) {
-      // Switch to another selected adversary
-      debugLog("Switching to another selected adversary:", remainingAdversary.actor.name);
-      createOrUpdateGMHUD(remainingAdversary);
-    } else if (!remainingAdversary) {
-      // No more adversaries selected - close HUD
-      debugLog("No more adversaries selected, closing HUD");
+    // Token was deselected - check if we still have other eligible tokens selected
+    const remainingToken = getControlledHudToken();
+    if (remainingToken && remainingToken.id !== token.id) {
+      // Switch to another selected token
+      debugLog("Switching to another selected token:", remainingToken.actor.name);
+      createOrUpdateGMHUD(remainingToken);
+    } else if (!remainingToken) {
+      // No more eligible tokens selected - close HUD
+      debugLog("No more eligible tokens selected, closing HUD");
       createOrUpdateGMHUD(null);
     }
   }
@@ -157,14 +171,14 @@ Hooks.on("canvasReady", () => {
   if (!game.user.isGM) return;
   
   debugLog("Canvas ready - checking for selected tokens");
-  
-  // Check if we have any adversary tokens selected on the new scene
-  const adversaryToken = getControlledAdversaryToken();
-  if (adversaryToken) {
-    debugLog("Found selected adversary on canvas ready:", adversaryToken.actor.name);
-    createOrUpdateGMHUD(adversaryToken);
+
+  // Check if we have any eligible tokens selected on the new scene
+  const hudToken = getControlledHudToken();
+  if (hudToken) {
+    debugLog("Found selected token on canvas ready:", hudToken.actor.name);
+    createOrUpdateGMHUD(hudToken);
   } else {
-    // No adversaries selected - close HUD
+    // Nothing eligible selected - close HUD
     createOrUpdateGMHUD(null);
   }
 });
@@ -178,7 +192,7 @@ Hooks.on("updateActor", async (actor, changes) => {  // Add async here
   
   if (_gmHudApp.actor?.id === actor.id) {
     debugLog("Displayed actor updated, refreshing HUD:", actor.name, changes);
-    const currentToken = getControlledAdversaryToken();
+    const currentToken = getControlledHudToken();
     if (currentToken && currentToken.actor.id === actor.id) {
       createOrUpdateGMHUD(currentToken);
     }
@@ -193,7 +207,7 @@ Hooks.on("createActiveEffect", (effect) => {
   
   if (_gmHudApp.actor?.id === effect.parent?.id) {
     debugLog("Active effect added to displayed actor, refreshing HUD");
-    const currentToken = getControlledAdversaryToken();
+    const currentToken = getControlledHudToken();
     if (currentToken) {
       createOrUpdateGMHUD(currentToken);
     }
@@ -205,7 +219,7 @@ Hooks.on("deleteActiveEffect", (effect) => {
 
   if (_gmHudApp.actor?.id === effect.parent?.id) {
     debugLog("Active effect removed from displayed actor, refreshing HUD");
-    const currentToken = getControlledAdversaryToken();
+    const currentToken = getControlledHudToken();
     if (currentToken) {
       createOrUpdateGMHUD(currentToken);
     }
@@ -224,12 +238,20 @@ Hooks.on("updateSetting", (setting) => {
 });
 
 /**
+ * Setting toggled: drop a stale NPC HUD, or open one for an already-selected NPC token.
+ */
+Hooks.on(NPC_SETTING_HOOK, () => {
+  if (!game.user.isGM) return;
+  createOrUpdateGMHUD(getControlledHudToken());
+});
+
+/**
  * Export for potential external use
  */
 export const DaggerheartGMHUDModule = {
   createOrUpdateGMHUD,
-  isValidAdversary,
-  getControlledAdversaryToken,
+  getHudKind,
+  getControlledHudToken,
   get currentHUD() { return _gmHudApp; }
 };
 

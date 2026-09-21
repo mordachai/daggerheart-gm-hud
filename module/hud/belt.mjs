@@ -1,8 +1,8 @@
 // module/hud/belt.mjs - utility belt: click-to-exec, right-click clear/remove, drag/drop rearrange, + to grow
 
-import { debugLog } from "../settings.mjs";
+import { debugLog, getSetting, SETTINGS } from "../settings.mjs";
 import { saveUtilityBelt } from "./context/utility-belt.mjs";
-import { toggleFeaturesPanel } from "./panels.mjs";
+import { togglePanel, getOpenPanelName } from "./panels.mjs";
 import { featureHasActions } from "../system/items.mjs";
 import { buildFeatureActions, getFeatureFearCost } from "./context/features.mjs";
 import { showTooltip, hideTooltip, scheduleHideTooltip, cancelTooltipHide } from "./status-menu.mjs";
@@ -31,6 +31,7 @@ function buildBeltTooltipHTML(app, slot) {
   const esc = foundry.utils.escapeHTML;
   const name = slot.dataset.name || "";
   const description = slot.dataset.description || "";
+  const gmNotes = getSetting(SETTINGS.beltGmNotes) ? (slot.dataset.gmNotes || "") : "";
   const featureId = slot.dataset.featureId;
 
   const item = app.actor?.items.get(featureId);
@@ -42,6 +43,12 @@ function buildBeltTooltipHTML(app, slot) {
 
   let html = `<div class="dgm-tooltip-title"><span>${esc(name)}</span>${fearCostHTML}</div>`;
   if (description) html += `<div class="dgm-tooltip-desc">${esc(description)}</div>`;
+  if (gmNotes) {
+    html += `<div class="dgm-gm-notes">
+               <div class="dgm-gm-notes-header">GM Notes</div>
+               <div class="dgm-tooltip-desc">${esc(gmNotes)}</div>
+             </div>`;
+  }
   if (actions.length) {
     html += `<div class="dgm-feature-actions dgm-tooltip-actions">`;
     for (const action of actions) {
@@ -57,16 +64,14 @@ function buildBeltTooltipHTML(app, slot) {
   return html;
 }
 
-/** Re-render the HUD and restore the features panel's open state (a fresh render always closes it). */
+/** Re-render the HUD and restore the open panel (a fresh render always closes it). */
 async function commitBelt(app, ids) {
-  const rootEl = app.element;
-  const shell = rootEl?.querySelector(".dgm-hud");
-  const wasFeaturesOpen = shell?.getAttribute("data-open") === "features";
+  const openPanel = getOpenPanelName(app.element);
 
   await saveUtilityBelt(app, ids);
   await app.render();
 
-  if (wasFeaturesOpen) toggleFeaturesPanel(app);
+  if (openPanel) togglePanel(app, openPanel);
 }
 
 export function attachBeltEvents(app) {

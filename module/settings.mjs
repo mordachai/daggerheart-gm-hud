@@ -10,8 +10,13 @@ export const SETTINGS = {
   disableRingFrames: "disableRingFrames",
   wideFeaturesPanel: "wideFeaturesPanel",
   hudBgOpacity: "hudBgOpacity",
+  showForNpcs: "showForNpcs",
+  beltGmNotes: "beltGmNotes",
   debug: "debug"
 };
+
+/** Hook fired when the "Show HUD for NPC actors" setting changes (the entry file re-evaluates the HUD). */
+export const NPC_SETTING_HOOK = "daggerheart-gm-hud.showForNpcsChanged";
 
 // Theme id -> display label. Keep in sync with styles/dgm-themes.css (.dgm-theme-<id>).
 export const THEMES = {
@@ -192,6 +197,30 @@ export function registerGMHUDSettings() {
     }
   });
 
+  // Show HUD for NPC actors - CLIENT SCOPED (each GM chooses for themselves)
+  game.settings.register(MODULE_ID, SETTINGS.showForNpcs, {
+    name: "Show HUD for NPC actors",
+    hint: "Open the GM HUD for Daggerheart NPC actors (details and features). Turn off to only get the HUD on adversaries.",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: (value) => {
+      debugLog(`Show HUD for NPCs ${value ? 'enabled' : 'disabled'}`);
+      Hooks.callAll(NPC_SETTING_HOOK, !!value);
+    }
+  });
+
+  // GM Notes in the belt hover text - CLIENT SCOPED (read when the tooltip opens, no re-render needed)
+  game.settings.register(MODULE_ID, SETTINGS.beltGmNotes, {
+    name: "GM Notes in Belt Tooltips",
+    hint: "Show a feature's GM Notes under its description when hovering a utility belt slot.",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
   // Debug Mode - CLIENT SCOPED (each user can enable their own debug)
   game.settings.register(MODULE_ID, SETTINGS.debug, {
     name: "Debug Mode",
@@ -259,6 +288,8 @@ export function registerGMHUDSettings() {
       `${MODULE_ID}.disableRingFrames`,
       `${MODULE_ID}.${SETTINGS.wideFeaturesPanel}`,
       `${MODULE_ID}.${SETTINGS.hudBgOpacity}`,
+      `${MODULE_ID}.${SETTINGS.showForNpcs}`,
+      `${MODULE_ID}.${SETTINGS.beltGmNotes}`,
       `${MODULE_ID}.${SETTINGS.debug}`
     ];
     

@@ -1427,3 +1427,154 @@ html.dgm-wide-features .dgm-divider-left {
     min-width: 220px;
   }
 }
+/* ===== NPC HUD (templates/hud-npc.hbs) ===== */
+
+/* Hug the content: the adversary container reserves 320px for its resource/attack columns,
+   the NPC HUD has neither, so drop the floor and let the width follow the content. */
+.dgm-hud--npc .dgm-container {
+  min-width: 200px;
+  padding-inline: 16px;
+}
+
+/* Aside toggles: F on top (nudged toward the portrait), a smaller D under it, Fear at the bottom.
+   D also carries .dgm-features-toggle, so it sits after F's rule to override it. */
+.dgm-hud--npc .dgm-features-toggle {
+  right: -16px;
+}
+
+.dgm-hud--npc .dgm-details-toggle {
+  top: 38px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  font-size: 1.05rem;
+}
+
+/* Bottom row: name plate replaces the adversary damage-threshold strip. */
+.dgm-section--nameplate {
+  padding: 2px 14px 4px;
+  max-width: 300px;
+}
+
+.dgm-nameplate {
+  font-family: var(--font-deco);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--dgm-accent);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  filter: drop-shadow(0 0 2px var(--dgm-surface));
+}
+
+/* Only one panel visible at a time: data-open="details" | "features". */
+.dgm-hud[data-open="details"] .dgm-panel--details {
+  display: block;
+}
+
+/* Feature form groups (Passive / Action / Reaction). */
+.dgm-feature-group + .dgm-feature-group {
+  margin-top: 10px;
+}
+
+.dgm-feature-group-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dgm-accent);
+  font-family: var(--font-enfatic);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 0 3px;
+  border-bottom: 1px solid var(--dgm-border);
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.dgm-feature-group-title .count {
+  margin-left: auto;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  background: var(--dgm-surface);
+  border: 1px solid var(--dgm-border);
+  border-radius: 8px;
+  padding: 0 6px;
+  color: var(--dgm-text);
+}
+
+.dgm-feature-group[data-collapsed="true"] .dgm-acc {
+  display: none;
+}
+
+/* Details panel header: the wide-features rule turns .dgm-header into a side-by-side flex row
+   (name | experiences). The NPC header has a single block, so keep it full-width and centered.
+   Selectors are `.dgm-hud`-prefixed to outrank `html.dgm-wide-features .dgm-header` (0,2,1). */
+.dgm-hud .dgm-panel--details .dgm-header {
+  display: block;
+}
+
+.dgm-hud .dgm-panel--details .dgm-pills-container {
+  justify-content: center;
+}
+
+/* Details panel body. */
+.dgm-detail-label {
+  display: block;
+  margin: 10px 0 2px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dgm-accent);
+}
+
+.dgm-detail-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--dgm-text);
+}
+
+/* GM Notes: separated block (item system.gmNotes on feature rows, actor notes in the NPC details).
+   Centered label between two rules, then the text. */
+.dgm-gm-notes {
+  margin-top: 8px;
+}
+
+.dgm-gm-notes-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dgm-muted);
+}
+
+.dgm-gm-notes-header::before,
+.dgm-gm-notes-header::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--dgm-border);
+}
+
+.dgm-gm-notes-body {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--dgm-text);
+}
+
+.dgm-gm-notes-body p:first-child {
+  margin-top: 0;
+}
+
+/* Inside feature rows, match the description text above it. */
+.dgm-acc-item .dgm-gm-notes-body {
+  font-size: 0.95rem;
+  line-height: 1.1rem;
+}

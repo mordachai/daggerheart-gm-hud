@@ -2,7 +2,7 @@
 
 import { debugLog } from "../settings.mjs";
 import { MODULE_ID, FLAGS } from "../constants.mjs";
-import { setGMPanelOpenDirection, reapplyStoredFilter } from "./panels.mjs";
+import { repositionOpenPanel, reapplyStoredFilter } from "./panels.mjs";
 
 export async function restorePosition(app) {
   const root = app.element;
@@ -67,12 +67,7 @@ export function enableDragging(app) {
     app._onResize = () => {
       if (app._isDragging) return;
 
-      const shell = root.querySelector(".dgm-hud");
-      const isOpen = shell?.getAttribute("data-open") === "features";
-      if (isOpen) {
-        const panel = root.querySelector(".dgm-panel--features");
-        if (panel) setGMPanelOpenDirection(panel);
-      }
+      repositionOpenPanel(root);
     };
 
     window.addEventListener("resize", app._onResize);
@@ -119,13 +114,7 @@ export function enableDragging(app) {
     }
 
     requestAnimationFrame(() => {
-      const shell = root.querySelector(".dgm-hud");
-      const isOpen = shell?.getAttribute("data-open") === "features";
-      if (isOpen) {
-        const panel = root.querySelector(".dgm-panel--features");
-        if (panel) setGMPanelOpenDirection(panel);
-      }
-
+      repositionOpenPanel(root);
       reapplyStoredFilter(app);
     });
   };

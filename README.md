@@ -4,11 +4,23 @@
 
 # Daggerheart GM HUD
 
-A streamlined HUD for Game Masters running Daggerheart sessions, providing quick access to adversary information and actions without cluttering the interface.
+A streamlined HUD for Game Masters running Daggerheart sessions, providing quick access to adversary and NPC information and actions without cluttering the interface.
 
 <img width="704" height="589" alt="image" src="https://github.com/user-attachments/assets/569ea625-be40-49c0-b9a4-c3c9aedbe13c" />
 
 https://github.com/user-attachments/assets/8256bc3f-ae30-45b0-b933-dc727646f66b
+
+## What's New in 2.1.0: NPC HUD
+
+The HUD now also opens for Daggerheart **NPC** actors, with a layout built for what an NPC actually has (details and features, no HP/stress/attack):
+
+- **Features (F) button**: opens the features panel, grouped by form into **Passive**, **Action** and **Reaction** (plus **Other** for anything else, e.g. evolution). Empty groups are hidden, each group shows a count, and clicking a group title collapses it
+- **Details (D) button**: opens a panel with the NPC's description, motives and GM notes
+- **Difficulty badge**: shown next to the portrait only when the NPC has a difficulty set
+- **GM Notes**: a feature's GM notes now show as their own "GM Notes" block under its description (on adversary features too), and the NPC's notes field is shown the same way in the Details panel
+- **Belt hover text shows GM Notes**: hovering a utility belt slot shows the feature's GM notes under its description (can be turned off in Settings)
+- **Open Sheet**: new item in the portrait's right-click menu (double-clicking the portrait still opens the sheet too)
+- Utility belt, fear, conditions, themes, lock position and dragging all work the same as on the adversary HUD. A fresh NPC belt starts with all of its features
 
 ## What's New in 2.0.0
 
@@ -54,9 +66,18 @@ Mega update — big refactor + new capabilities:
 
 ### Utility Belt:
 - **Click:** execute the slotted item/feature
+- **Hover:** shows the feature's name, description, GM notes and action buttons
 - **Right-click:** clear a slot
 - **Drag and drop:** rearrange slots, or drag in a new item/feature
 - **+ button:** add another slot
+
+### NPC HUD:
+- **F button:** toggle the features panel (Passive / Action / Reaction groups)
+- **D button:** toggle the details panel (description, motives, GM notes)
+- **Group title (in the features panel):** click to collapse or expand that group
+- **Fear:** Left-click = spend, Right-click = gain
+- Portrait controls (drag, double-click, right-click menu) work as described above; the menu also has **Open Sheet**
+- Only one panel (F or D) is open at a time
 
 ## Features
 
@@ -99,6 +120,12 @@ https://github.com/user-attachments/assets/ee8e4164-1c1d-4b13-9182-5f461c320f8f
 
 <img width="794" height="696" alt="image" src="https://github.com/user-attachments/assets/55af0288-a3c4-4b9a-a771-e768bc8e68f1" />
 
+### NPC and Belt Options:
+- **Show HUD for NPC actors** (default on): open the HUD for NPC tokens. Turn it off to only get the HUD on adversaries; an open NPC HUD closes right away
+- **GM Notes in Belt Tooltips** (default on): show a feature's GM notes in the hover text of utility belt slots
+
+Both are per-user (client) settings.
+
 ## Installation
 
 Go to Add-on Modules and search for _daggerheart gm hud_. Click Install.
@@ -122,9 +149,9 @@ Remember to activate the module in your world.
 
 ## Usage Notes
 
-- The HUD only appears when you select adversary-type actors as a GM
-- Multiple adversary selection will show the HUD for the last selected token
-- The HUD automatically closes when no adversary tokens are selected
+- The HUD only appears when you select adversary or NPC actors as a GM (NPCs can be turned off in Settings)
+- Multiple selection will show the HUD for the last selected token
+- The HUD automatically closes when no adversary or NPC tokens are selected
 - Features panel intelligently positions itself to avoid covering the main HUD
 - All position and theme preferences are saved per-user
 

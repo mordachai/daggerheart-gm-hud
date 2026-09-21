@@ -1,0 +1,67 @@
+<li class="dgm-acc-item" data-has-actions="{{hasActions}}" data-feature-id="{{id}}" draggable="true">
+  <details data-sync>
+    <summary>
+      {{!-- Feature Icon (clickable if has actions) --}}
+      <img class="dgm-feature-icon{{#if hasActions}} clickable{{/if}}"
+          src="{{img}}"
+          alt="{{name}}"
+          role="button"
+          tabindex="0"
+          data-action="{{#if hasActions}}feature-exec{{else}}feature-info{{/if}}"
+          data-feature-id="{{id}}"
+          title="{{name}}">
+
+      {{!-- Feature Name + Form Badge (stacked) --}}
+      <span class="dgm-feature-title">
+        <span class="dgm-feature-name">{{truncate name 25}}</span>
+        {{#if featureFormLabel}}
+        <span class="dgm-feature-form-badge">
+          {{#if featureFormIcon}}<i class="fa-solid {{featureFormIcon}}"></i>{{/if}}
+          {{featureFormLabel}}
+        </span>
+        {{/if}}
+      </span>
+
+      {{!-- Resource Info (uses, etc.) --}}
+      {{#with (getResourceInfo _item)}}
+      {{#if this}}
+      <span class="dgm-feature-resource">
+        {{#if max}}{{value}}/{{max}}{{else}}{{value}}{{/if}}
+      </span>
+      {{/if}}
+      {{/with}}
+
+      {{!-- Send to Chat Button --}}
+      <i class="far fa-comment dgm-feature-chat"
+        role="button"
+        tabindex="0"
+        data-action="feature-to-chat"
+        data-feature-id="{{id}}"
+        title="{{l 'DAGGERHEART.UI.Tooltip.sendToChat'}}"></i>
+    </summary>
+
+    {{!-- Feature Description (expanded content) --}}
+    <div class="dgm-feature-content">
+      {{{description}}}
+    </div>
+
+    {{> "modules/daggerheart-gm-hud/templates/partials/gm-notes.hbs" html=gmNotes}}
+
+    {{!-- Action Buttons (one per system.actions entry, matching the sheet's chat card) --}}
+    {{#if actions.length}}
+    <div class="dgm-feature-actions">
+      {{#each actions}}
+      <button type="button"
+              class="dgm-feature-action-btn"
+              data-action="feature-action-use"
+              data-feature-id="{{../id}}"
+              data-action-id="{{id}}">
+        <i class="fa-solid {{icon}}"></i><span>{{name}}</span>
+      </button>
+      {{/each}}
+    </div>
+    {{/if}}
+  </details>
+</li>
+
+<div class="dgm-divider-left"></div>

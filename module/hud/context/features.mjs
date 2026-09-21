@@ -1,6 +1,6 @@
 // module/hud/context/features.mjs - feature list with enriched, click-to-roll descriptions
 
-import { enrichItemDescription, toHudInlineButtons } from "../../helpers/inline-rolls.mjs";
+import { enrichItemDescription, enrichHudField, toHudInlineButtons } from "../../helpers/inline-rolls.mjs";
 import { featureHasActions } from "../../system/items.mjs";
 
 /** Icon per system.featureForm (passive/action/reaction/evolution) - the system defines no icon of its own. */
@@ -42,6 +42,30 @@ export function buildFeatureActions(item) {
     }));
 }
 
+/** Group order for NPC feature lists (matches the NPC sheet); anything else falls into "other". */
+const FEATURE_GROUP_ORDER = ["passive", "action", "reaction"];
+
+/** Split features into [{form, label, icon, features}] - passive / action / reaction / other, empty groups skipped. */
+export function groupFeaturesByForm(features) {
+  const buckets = new Map([...FEATURE_GROUP_ORDER, "other"].map(form => [form, []]));
+  for (const feature of features) {
+    const form = FEATURE_GROUP_ORDER.includes(feature.featureForm) ? feature.featureForm : "other";
+    buckets.get(form).push(feature);
+  }
+
+  return [...buckets.entries()]
+    .filter(([, list]) => list.length)
+    .map(([form, list]) => ({
+      form,
+      label: form === "other"
+        ? "Other"
+        : game.i18n.localize(CONFIG.DH?.ITEM?.featureForm?.[form] ?? form),
+      icon: form === "other" ? "fa-ellipsis" : FEATURE_FORM_ICONS[form],
+      count: list.length,
+      features: list
+    }));
+}
+
 export async function collectFeatures(app) {
   const featureItems = app.actor.items
     .filter(item => item.type === "feature")
@@ -51,6 +75,12 @@ export async function collectFeatures(app) {
     featureItems.map(async (item) => {
       const enrichedHTML = await enrichItemDescription(item);
       const finalHTML = toHudInlineButtons(enrichedHTML, { enableDuality: true });
+
+      // GM-only notes live in their own item field (system.gmNotes) - shown as a separate section.
+      const gmNotes = await enrichHudField(item.system?.gmNotes, {
+        rollData: item.getRollData?.() ?? item.actor?.getRollData?.() ?? {},
+        relativeTo: item
+      });
 
       const featureForm = item.system?.featureForm || "";
       const featureFormKey = featureForm ? CONFIG.DH?.ITEM?.featureForm?.[featureForm] : null;
@@ -62,6 +92,7 @@ export async function collectFeatures(app) {
         name: item.name || "Unnamed Feature",
         img: item.img || "icons/svg/aura.svg",
         description: finalHTML,
+        gmNotes,
         hasActions: featureHasActions(item),
         featureForm,
         featureFormLabel: featureFormKey ? game.i18n.localize(featureFormKey) : "",

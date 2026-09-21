@@ -12,6 +12,7 @@
              data-feature-id="{{id}}"
              data-name="{{name}}"
              data-description="{{description}}"
+             data-gm-notes="{{gmNotes}}"
              draggable="{{#if id}}true{{else}}false{{/if}}"
              role="button"
              tabindex="0"
@@ -43,7 +44,8 @@
                 role="button"
                 tabindex="0"
                 data-tab="features"
-                data-action="toggle-features"
+                data-action="toggle-panel"
+                data-panel="features"
                 aria-controls="dgm-features-panel"
                 aria-expanded="false"
                 title="{{l 'DAGGERHEART.GENERAL.features'}}">
@@ -305,6 +307,8 @@
                 <div class="dgm-feature-content">
                   {{{description}}}
                 </div>
+
+                {{> "modules/daggerheart-gm-hud/templates/partials/gm-notes.hbs" html=gmNotes}}
 
                 {{!-- Action Buttons (one per system.actions entry, matching the sheet's chat card) --}}
                 {{#if actions.length}}

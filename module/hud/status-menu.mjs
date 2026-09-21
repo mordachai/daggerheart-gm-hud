@@ -236,6 +236,12 @@ export function attachStatusMenu(app) {
       return;
     }
 
+    if (action === "open-sheet") {
+      hideContextMenu(app);
+      app.actor?.sheet?.render(true, { focus: true });
+      return;
+    }
+
     if (action === "toggle-lock") {
       const locked = !isPositionLocked();
       await setPositionLocked(rootEl, locked);
